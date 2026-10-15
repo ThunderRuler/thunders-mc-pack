@@ -1,0 +1,13 @@
+name = "Recast"
+filename = "recast-26.3.0-3.8.jar"
+side = "server"
+
+[download]
+url = "https://cdn.modrinth.com/data/8TWzoOby/versions/Cs00oSQc/recast-26.3.0-3.8.jar"
+hash-format = "sha512"
+hash = "843768fb929a02fa39ad7a80ccc05494ed5956145f32b33370cc9800b2253e8549ba084a14a444dd021dc221c1cb5b329868cc4b5edf3536495090c1fa8632a8"
+
+[update]
+[update.modrinth]
+mod-id = "8TWzoOby"
+version = "Cs00oSQc"

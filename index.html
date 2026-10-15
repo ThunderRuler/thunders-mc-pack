@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThundersMC Pack</title>
+<meta name="description" content="Minecraft 26.3 pack for Thunder's friends server. Password needed to download.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<canvas id="dither" aria-hidden="true"></canvas>
+
+<main>
+  <header class="hero">
+    <p class="kicker" data-reveal>Minecraft 26.3 &middot; Fabric &middot; friends only</p>
+    <h1 data-reveal>ThundersMC Pack</h1>
+    <p class="sub" data-reveal>One download sets everything up. It updates itself every time you press Play.</p>
+
+    <a class="btn btn-prism" data-reveal data-ripple href="https://prismlauncher.org/download/" target="_blank" rel="noopener">
+      <span class="btn-no">1</span> Get Prism Launcher
+    </a>
+
+    <div class="platforms" data-reveal>
+      <button class="btn btn-mac" type="button" data-platform="mac" data-ripple>
+        <span class="btn-no">2</span> macOS
+      </button>
+      <button class="btn btn-win" type="button" data-platform="windows" data-ripple>
+        <span class="btn-no">2</span> Windows
+      </button>
+    </div>
+
+    <form class="unlock" id="unlock" hidden autocomplete="on">
+      <label for="pw" id="pw-label">Password for the Windows download</label>
+      <div class="unlock-row">
+        <input id="pw" name="password" type="password" autocomplete="current-password" required>
+        <button class="btn btn-go" type="submit" data-ripple>Download</button>
+      </div>
+      <p class="unlock-msg" id="unlock-msg" role="status" aria-live="polite"></p>
+    </form>
+    <p class="fineprint" data-reveal>macOS: Apple Silicon (M1 or newer). Windows: also works on Linux. Ask Thunder for the password.</p>
+  </header>
+
+  <section class="steps" aria-labelledby="steps-title">
+    <h2 id="steps-title" data-reveal>Four steps</h2>
+    <ol>
+      <li class="step" data-reveal>
+        <div class="step-text">
+          <p class="step-no">1</p>
+          <h3>Get Prism</h3>
+          <p>Install <a href="https://prismlauncher.org/download/" target="_blank" rel="noopener" data-ripple>Prism Launcher</a>, open it and sign in with the Microsoft account that owns Minecraft Java Edition: <em>Accounts &gt; Manage Accounts &gt; Add Microsoft</em>.</p>
+          <p class="note">You don't need to install Java. Prism downloads it; say yes if it asks.</p>
+        </div>
+        <figure><img src="assets/shots/1-prism.png" alt="The Prism Launcher download page with installers for Windows, macOS and Linux" loading="lazy"></figure>
+      </li>
+      <li class="step" data-reveal>
+        <div class="step-text">
+          <p class="step-no">2</p>
+          <h3>Download the pack</h3>
+          <p>Press <strong class="c-mac">macOS</strong> or <strong class="c-win">Windows</strong> above and type the password. You get one small zip file (under 1&nbsp;MB). Don't unzip it.</p>
+        </div>
+        <figure><img src="assets/shots/2-download.png" alt="This page's password box with the Download button" loading="lazy"></figure>
+      </li>
+      <li class="step" data-reveal>
+        <div class="step-text">
+          <p class="step-no">3</p>
+          <h3>Import the pack</h3>
+          <p>In Prism click <strong>Add Instance</strong>, choose <strong>Import</strong> on the left, press <strong>Browse</strong>, pick the zip and click <strong>OK</strong>. You can also drag the zip onto the Prism window.</p>
+        </div>
+        <figure><img src="assets/shots/3-import.png" alt="Prism's Add Instance window on the Import page with the zip selected" loading="lazy"></figure>
+      </li>
+      <li class="step" data-reveal>
+        <div class="step-text">
+          <p class="step-no">4</p>
+          <h3>Play</h3>
+          <p>Select the new <em>Thunders-MC-Pack-26.3</em> instance (<em>-Mac</em> on a Mac) and press <strong>Launch</strong>. The first time, a progress bar downloads about 200&nbsp;MB of mods. Let it finish. Then open <strong>Multiplayer</strong>: <em>Thunder's Server</em> is already in the list.</p>
+          <p class="note">Thunder has to whitelist your Minecraft username before you can join.</p>
+        </div>
+        <figure class="fig-narrow"><img src="assets/shots/4-play.png" alt="Prism with the Thunders-MC-Pack-26.3 instance selected and the Launch button" loading="lazy"></figure>
+      </li>
+    </ol>
+  </section>
+
+  <footer class="foot" data-reveal>
+    <p class="online" id="online"><span class="dot" aria-hidden="true"></span><span id="online-text">Unlock a download to see who's online</span></p>
+    <p class="legal">The pack includes a modified build of InertiaAntiCheat (GPL-3.0). Ask Thunder for its source code.</p>
+  </footer>
+</main>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

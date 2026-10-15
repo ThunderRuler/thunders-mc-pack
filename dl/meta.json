@@ -1,0 +1,15 @@
+{
+ "kdf": "PBKDF2-SHA256",
+ "iterations": 600000,
+ "salt": "MdG2RpcLGjP3Y7PLXFwjTg==",
+ "files": {
+  "windows": {
+   "name": "Thunders-MC-Pack-26.3.zip",
+   "size": 252673
+  },
+  "mac": {
+   "name": "Thunders-MC-Pack-26.3-Mac.zip",
+   "size": 252686
+  }
+ }
+}

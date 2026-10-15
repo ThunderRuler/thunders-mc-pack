@@ -1,0 +1,13 @@
+name = "Distant Horizons SeedGen"
+filename = "Distant Horizons SeedGen 0.9.1 for 26.3 Fabric.jar"
+side = "client"
+
+[download]
+url = "https://cdn.modrinth.com/data/iUGLCJTI/versions/7hGTqcL4/Distant%20Horizons%20SeedGen%200.9.1%20for%2026.3%20Fabric.jar"
+hash-format = "sha512"
+hash = "9910277c6615a0e542e9ecd2a8ef184a0c076b249deff5fb94e2643883d121df1abefb455e1866848ff3e7fb98e9daddcd4e3c9934704f572fb5c015b15241c0"
+
+[update]
+[update.modrinth]
+mod-id = "iUGLCJTI"
+version = "7hGTqcL4"

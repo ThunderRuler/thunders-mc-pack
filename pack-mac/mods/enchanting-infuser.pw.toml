@@ -1,0 +1,13 @@
+name = "Enchanting Infuser"
+filename = "enchantinginfuser-v26.3.0-mc26.3.x+fabric.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/ePv85y52/versions/gGpFJLO5/enchantinginfuser-v26.3.0-mc26.3.x%2Bfabric.jar"
+hash-format = "sha512"
+hash = "e68e6a98a75358a0bff8bcd4978016d1fceeabe4c4f530625e6f3a5f434bbcf2e148c8ebe5d67d85f47900e76366c240ee4cedaf6e22620cd31479ec61921064"
+
+[update]
+[update.modrinth]
+mod-id = "ePv85y52"
+version = "gGpFJLO5"

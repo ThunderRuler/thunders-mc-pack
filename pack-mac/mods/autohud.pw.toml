@@ -1,0 +1,13 @@
+name = "Auto HUD"
+filename = "autohud-9.2+26.3-fabric.jar"
+side = "client"
+
+[download]
+url = "https://cdn.modrinth.com/data/temczoTQ/versions/Q8jusMTm/autohud-9.2%2B26.3-fabric.jar"
+hash-format = "sha512"
+hash = "342ad03e2249e1d25a1f1ee9ff27213e0a6720ca9df03c456ffce7f0aedfee61b25581152a318b7d452e313d4b08ca5ef3df968c7c0bb3fcd8573d62d64eab26"
+
+[update]
+[update.modrinth]
+mod-id = "temczoTQ"
+version = "Q8jusMTm"

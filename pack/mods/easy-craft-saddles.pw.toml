@@ -1,0 +1,13 @@
+name = "Easy Craft Saddles"
+filename = "CraftableSaddle-fabric-26.3-2.4.1.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/kdsyQx2S/versions/VD7Lzn4e/CraftableSaddle-fabric-26.3-2.4.1.jar"
+hash-format = "sha512"
+hash = "0fec9d6d2ef70c05c85befdc954f70ad315b73999ff27e005d5ab2109eed483f7754bee57751910a7e074b78e42f35269cd8f951e79448c401117abc4978b1b3"
+
+[update]
+[update.modrinth]
+mod-id = "kdsyQx2S"
+version = "VD7Lzn4e"

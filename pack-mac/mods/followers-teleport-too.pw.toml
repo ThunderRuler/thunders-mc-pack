@@ -1,0 +1,13 @@
+name = "Followers Teleport Too"
+filename = "followersteleporttoo-26.3.0-3.1.jar"
+side = "server"
+
+[download]
+url = "https://cdn.modrinth.com/data/E5YVNsbH/versions/RBDakrg4/followersteleporttoo-26.3.0-3.1.jar"
+hash-format = "sha512"
+hash = "2613fcfe7bad73b73015566f2cdfbbc2cc5b219ac9a23990f62931edb1a5c3d4509396169e31e7b84fca7273586e4c1e1b39534537386398b4fdd6a30f5b412f"
+
+[update]
+[update.modrinth]
+mod-id = "E5YVNsbH"
+version = "RBDakrg4"

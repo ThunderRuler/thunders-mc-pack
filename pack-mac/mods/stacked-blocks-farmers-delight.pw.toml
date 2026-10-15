@@ -1,0 +1,13 @@
+name = "Stacked Blocks: Farmer's Delight"
+filename = "stackedblocksfarmersdelight-26.09.15-26.3-fabric.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/LQlQFBH9/versions/SdvNCqKY/stackedblocksfarmersdelight-26.09.15-26.3-fabric.jar"
+hash-format = "sha512"
+hash = "d7ac9a3768de20e4082f84f1d883defabc17dbaf6d537d41faa6af46b8443e46ad637fdeaf86ef778c4a6b9b7c2183bee534beb61d2f56b842e619485e67abaa"
+
+[update]
+[update.modrinth]
+mod-id = "LQlQFBH9"
+version = "SdvNCqKY"

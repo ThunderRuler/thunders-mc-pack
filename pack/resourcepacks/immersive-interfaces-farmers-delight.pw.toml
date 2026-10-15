@@ -1,0 +1,13 @@
+name = "Immersive Interfaces - Farmer's Delight"
+filename = "\u00a76Immersive_Interfaces_Farmersdelight1.20-26.x.zip"
+side = "client"
+
+[download]
+url = "https://cdn.modrinth.com/data/uwgiohwY/versions/eapwLYWz/%C2%A76Immersive_Interfaces_Farmersdelight1.20-26.x.zip"
+hash-format = "sha512"
+hash = "89c1f70b1872612eb5c2c67621e35e22acb93055edab71415353f811544b61efd6fdc103c72a7e593d2debf82524b5f1157499b672b729e50f1725b8702cade1"
+
+[update]
+[update.modrinth]
+mod-id = "uwgiohwY"
+version = "eapwLYWz"

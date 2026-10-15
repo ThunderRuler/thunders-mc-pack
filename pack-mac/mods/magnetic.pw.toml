@@ -1,0 +1,13 @@
+name = "magnetic"
+filename = "magnetic-3.15.1-26.3+fabric.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/LLfA8jAD/versions/31GCV0Cs/magnetic-3.15.1-26.3%2Bfabric.jar"
+hash-format = "sha512"
+hash = "b1d1fda61f5274327ee4a9c323b425ec3a965a00c57f8a8101830eb8bd239975ffcdf12b2c84341146727c9b98f2d4d9c6edd034dbe4f589120f8d5b099691d1"
+
+[update]
+[update.modrinth]
+mod-id = "LLfA8jAD"
+version = "31GCV0Cs"

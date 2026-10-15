@@ -1,0 +1,32 @@
+version:5023
+biomeBlendRadius:1
+cutoutLeaves:true
+entityDistanceScaling:0.75
+entityShadows:false
+graphicsPreset:"custom"
+prioritizeChunkUpdates:0
+textureFiltering:0
+mipmapLevels:2
+particles:1
+renderClouds:"fast"
+cloudRange:32
+renderDistance:8
+simulationDistance:8
+weatherRadius:5
+advancedItemTooltips:true
+darkMojangStudiosBackground:true
+guiScale:3
+joinedFirstServer:true
+onboardAccessibility:false
+operatorItemsTab:true
+skipMultiplayerWarning:true
+telemetryOptInExtra:false
+tutorialStep:none
+key_zoomify.key.zoom:key.keyboard.c
+key_zoomify.key.zoom.secondary:key.keyboard.unknown
+key_iris.keybind.reload:key.keyboard.unknown
+key_iris.keybind.toggleShaders:key.keyboard.unknown
+key_iris.keybind.shaderPackSelection:key.keyboard.unknown
+key_key.optigui.inspect:key.keyboard.unknown
+resourcePacks:["vanilla", "fabric", "file/Chat Reporting Helper.zip", "file/SodiumTranslations.zip", "file/Faithful 32x - 26.3.zip", "file/§6§lVanilla Experience+§0.zip", "file/repottery-v1-3-2.zip", "file/Better Lanterns v1.4.0 - 26.2+26.3.zip", "file/animated-items 1.21.x-26.3 - v1.6.3.zip", "file/FreshAnimations_v1.10.5.zip", "file/FA+All_Extensions-v1.9.2.zip", "file/FA+Details-v2.3.zip", "file/FA+Objects-v2.1.2.zip", "file/FA+Quivers-v2.2.zip", "file/FA+Emissive-v1.6.zip", "file/Unique Dark - Lite - 1.20.2-26.x.zip", "file/§6Immersive§8_§6Interfaces§8.zip", "file/§6Immersive_Interfaces_Farmersdelight1.20-26.x.zip"]
+incompatibleResourcePacks:["file/repottery-v1-3-2.zip", "file/§6Immersive§8_§6Interfaces§8.zip"]

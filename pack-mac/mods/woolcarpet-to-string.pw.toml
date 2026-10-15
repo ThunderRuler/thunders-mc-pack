@@ -1,0 +1,13 @@
+name = "Wool makes string"
+filename = "wool-makes-string-1.1.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/h2wBq4a7/versions/gZEqu8Qn/wool-makes-string-1.1.jar"
+hash-format = "sha512"
+hash = "85a48a3cdbbceb978efba4f7f127e3b37257459f9c2f7ff6247e1f3e872cf8fb47a0729af73d17dee29a9c8efb1775abede92e89d1b91f2d151bac9d81f8004c"
+
+[update]
+[update.modrinth]
+mod-id = "h2wBq4a7"
+version = "gZEqu8Qn"

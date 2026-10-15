@@ -1,0 +1,13 @@
+name = "Thunder's MC Pack"
+author = "Thunder"
+version = "26.3-1"
+pack-format = "packwiz:1.1.0"
+
+[index]
+file = "index.toml"
+hash-format = "sha256"
+hash = "bc4e9872afb6b7bab0ef63b72799faf6746eec2d38fba66efd311e4148d06fda"
+
+[versions]
+fabric = "0.19.5"
+minecraft = "26.3"

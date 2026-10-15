@@ -1,0 +1,13 @@
+name = "PolyDecorations"
+filename = "polydecorations-0.13.2+26.3.jar"
+side = "server"
+
+[download]
+url = "https://cdn.modrinth.com/data/5710VC7f/versions/ChcneNiJ/polydecorations-0.13.2%2B26.3.jar"
+hash-format = "sha512"
+hash = "18fdad4b7e4c8223c44c95f5d00a6eef70b43621277e37607394f50c1fc19715c432e11efd135a6105ce3e5877664d2c8d1a082e051505e51a3a18e74322ad23"
+
+[update]
+[update.modrinth]
+mod-id = "5710VC7f"
+version = "ChcneNiJ"

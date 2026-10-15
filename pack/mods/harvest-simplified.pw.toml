@@ -1,0 +1,13 @@
+name = "Harvest Simplified"
+filename = "harvest-simplified-1.1.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/bty3Od8P/versions/MRlp3v7o/harvest-simplified-1.1.jar"
+hash-format = "sha512"
+hash = "5abf058f88ee75cf17c203299477969bc1d319a32dd3e875d7945ebbad4db97307633fe44c96926cad4ae5a9c226c5ca50689f92731decb7650a5593132e0cdd"
+
+[update]
+[update.modrinth]
+mod-id = "bty3Od8P"
+version = "MRlp3v7o"

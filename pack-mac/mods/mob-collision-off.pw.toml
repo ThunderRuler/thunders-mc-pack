@@ -1,0 +1,13 @@
+name = "Mob Collision Off"
+filename = "mobcollisionoff-3.0.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/kr8MOAlY/versions/zL9tyIq1/mobcollisionoff-3.0.jar"
+hash-format = "sha512"
+hash = "73ecc8d851b050164275ba99f66957640ce60c32ae95443e6ce701d75e1ed10d1ecb45555d046eba1e84c325b62a77185f914d188fe3f094e6e5c99eb9aa4ebc"
+
+[update]
+[update.modrinth]
+mod-id = "kr8MOAlY"
+version = "zL9tyIq1"

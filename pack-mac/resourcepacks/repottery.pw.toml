@@ -1,0 +1,13 @@
+name = "Repottery"
+filename = "repottery-v1-3-2.zip"
+side = "client"
+
+[download]
+url = "https://cdn.modrinth.com/data/v6u2uphV/versions/wtwUQLBK/repottery-v1-3-2.zip"
+hash-format = "sha512"
+hash = "c81ac8d00eae557d45b1e7341087086ef85520d225aa65e36b7863a84f08dc0d79b35fdcd543db3845da3499b01c410c7b83693ec12dfb020eccb03704c65cb9"
+
+[update]
+[update.modrinth]
+mod-id = "v6u2uphV"
+version = "wtwUQLBK"

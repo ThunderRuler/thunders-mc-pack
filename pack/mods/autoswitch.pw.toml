@@ -1,0 +1,13 @@
+name = "AutoSwitch"
+filename = "autoswitch-fabric-17.0.0.jar"
+side = "client"
+
+[download]
+url = "https://cdn.modrinth.com/data/uSdcnlts/versions/psVHvP54/autoswitch-fabric-17.0.0.jar"
+hash-format = "sha512"
+hash = "bfc7321f8d158e7c8d1bcd2fc74bdb49bfe4b62e9a41f643d82681dd4ba4b0bca0da0dcb1008d9d731c1bb3b52ed882a5edf8773e5e73780d5171c9135d05da8"
+
+[update]
+[update.modrinth]
+mod-id = "uSdcnlts"
+version = "psVHvP54"

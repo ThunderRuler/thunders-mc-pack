@@ -1,0 +1,13 @@
+name = "Quick Paths"
+filename = "quickpaths-26.3.0-4.0.jar"
+side = "server"
+
+[download]
+url = "https://cdn.modrinth.com/data/IPbFTPzw/versions/VB32xkIK/quickpaths-26.3.0-4.0.jar"
+hash-format = "sha512"
+hash = "13ef03a848f2a57e08ba464edb2afcaf844dc3a920dc4be141082baca149461dd59de8e1dd8a692778d5512e5abbd360424163f4c4dc3dc846f81c7cce638fd6"
+
+[update]
+[update.modrinth]
+mod-id = "IPbFTPzw"
+version = "VB32xkIK"

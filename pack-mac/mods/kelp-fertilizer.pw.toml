@@ -1,0 +1,13 @@
+name = "Kelp Fertilizer"
+filename = "kelpfertilizer-26.3.0-3.5.jar"
+side = "server"
+
+[download]
+url = "https://cdn.modrinth.com/data/eKxUpBGQ/versions/GD6zAtxQ/kelpfertilizer-26.3.0-3.5.jar"
+hash-format = "sha512"
+hash = "2248df4a7a344fa64d3ac8d036966abecc9ff7b485073f034132f6cc8fafe1749fafda19c159016014f4582609fe92ac08146f9a973819d0c5e63a7f5ad02173"
+
+[update]
+[update.modrinth]
+mod-id = "eKxUpBGQ"
+version = "GD6zAtxQ"

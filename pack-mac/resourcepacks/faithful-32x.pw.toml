@@ -1,0 +1,13 @@
+name = "Faithful 32x"
+filename = "Faithful 32x - 26.3.zip"
+side = "client"
+
+[download]
+url = "https://cdn.modrinth.com/data/w0TnApzs/versions/lDYpMiqk/Faithful%2032x%20-%2026.3.zip"
+hash-format = "sha512"
+hash = "e90ec63af7f239dbb99aa20c98b23d830e76898f65d3e31b7f0b53bb36db12dcd8c38d6930c743237c9c3db7bf708423fa1d1b2fd497dd6c281dbe216b779db9"
+
+[update]
+[update.modrinth]
+mod-id = "w0TnApzs"
+version = "lDYpMiqk"
