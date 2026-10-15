@@ -625,8 +625,9 @@
     // the torch flickers a little
     var flick = reduce ? 1 : 0.88 + 0.12 * vnoise(now * 0.006, 0.5, 5);
     if (wd && wd.base && updateGlows(now, sy, flick)) busy = true;
+    var pr0 = WY / CELL;                            // page row of the window's first row
     for (var y = 0; y < H; y++) {
-      var by = (y & 7) * 8;
+      var by = ((pr0 + y) & 7) * 8;                 // dither grid counted from the top of the page, so it scrolls with the page
       if (y > frontRow) { for (var x0 = 0; x0 < W; x0++) px[j++] = 0; continue; }
       var band = frontRow - y < 6 * K && front < VH + 30 ? 0.22 * (1 - (frontRow - y) / (6 * K)) : 0;
       var wy = wd ? Math.floor((y * CELL + sy2 - wd.top) / CELL) : -1, inW = wy >= 0;
