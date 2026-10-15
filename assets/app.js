@@ -24,7 +24,8 @@
   // Smooth random noise (value noise, several octaves): used for the sky haze and the cloud shapes.
   function hash(x, y, s) {
     var h = Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(s, 1442695041) | 0;
-    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    h = Math.imul(h ^ (h >>> 15), 0x85ebca6b);   // thorough mixing, so no stripes or grids show up in the noise
+    h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
     return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
   }
   function vnoise(x, y, s) {
@@ -44,15 +45,15 @@
   // to a warm orange glow low down; clouds have dusky lavender tops and undersides lit pink-orange by the sun below the horizon.
   function rgb(hex) { var n = parseInt(hex.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
   function pack(c) { return (0xFF000000 | (c[2] << 16) | (c[1] << 8) | c[0]) >>> 0; }   // canvas pixels are little-endian ABGR
-  var LIGHT = { sky: ['#b4d0ed'], bolt: '#8ca0cd', cloud: null, shade: '#c6d3e2', flash: 0.6, flat: false, amb: 0.18, cave: '#1c1b21' };
+  var LIGHT = { sky: ['#b4d0ed'], bolt: '#8ca0cd', cloud: null, shade: '#c6d3e2', flash: 0.6, flat: false };
   var DARK = { sky: ['#252a5e', '#4b3a7c', '#8a4a82', '#c8607a', '#e88a5c'], bolt: '#b9a6d8',
-               cloud: '#6e6890', shade: '#d98a7a', flash: 0.25, flat: true, amb: 0.14 };
+               cloud: '#6e6890', shade: '#d98a7a', flash: 0.25, flat: true };
   var dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)');
-  var SKY, BOLT, CLOUD, SHADE, FLASH, FLAT, AMB, CAVE;
+  var SKY, BOLT, CLOUD, SHADE, FLASH, FLAT;
   function pickTheme() {
     var c = dark && dark.matches ? DARK : LIGHT;
     SKY = c.sky.map(rgb); BOLT = pack(rgb(c.bolt)); CLOUD = c.cloud ? pack(rgb(c.cloud)) : 0;
-    SHADE = pack(rgb(c.shade)); FLASH = c.flash; FLAT = c.flat; AMB = c.amb; CAVE = c.cave ? pack(rgb(c.cave)) : 0;
+    SHADE = pack(rgb(c.shade)); FLASH = c.flash; FLAT = c.flat;
   }
   // Sky colour at u (0 = top of the sky, 1 = where it fades out), blended between the theme's colour stops.
   function skyColour(u) {
@@ -90,7 +91,9 @@
     for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
       // Faint large-scale haze so the sky isn't a perfectly flat gradient, plus a little per-dot jitter that hides
       // the contour lines an ordered dither draws where a smooth gradient crosses from one pattern to the next.
-      noise[y * W + x] = fbm(x * CELL / 420, y * CELL / 260, 3) + 0.35 * (hash(x, y, 77) - 0.5);
+      // (two broad layers at an angle: finer noise layers line up with the screen and show as a plaid pattern)
+      var px0 = x * CELL, py0 = y * CELL, u0 = (px0 * 0.8 + py0 * 0.6), v0 = (py0 * 0.8 - px0 * 0.6);
+      noise[y * W + x] = 0.65 * vnoise(u0 / 520, v0 / 300, 3) + 0.35 * vnoise(u0 / 230, v0 / 160, 4) + 0.35 * (hash(x, y, 77) - 0.5);
     }
     if (!bolts.length && !reduce && !demo) planStorm();
     if (!clouds.length) planClouds();
@@ -194,9 +197,10 @@
   /* ------------------------------------------------------------------ world
      Below the sky the page is a slice of a Minecraft world: grass, dirt and a few trees at the surface, then stone with
      caves, ores and an old mineshaft, deepslate (with the diamonds) lower down, lava lakes near the bottom and bedrock at
-     the very end of the page. Underground is dark like the real game: skylight only reaches a few blocks down, the
-     mineshaft's torches and the lava glow on their own, and the mouse is your torch (on phones a torch rides along in the
-     middle of the screen). Clicking an empty spot in a cave places a torch there.
+     the very end of the page. Underground is pitch black: daylight only reaches a few blocks into the ground. Move the
+     mouse into an empty space (a cave, cavern or the mineshaft) and that whole space lights up, as if you'd walked in with
+     a torch; it fades again when you leave. On phones the middle of the screen does the same as you scroll. Clicking an
+     empty spot places a torch there for good.
      Blocks are 32 CSS px: 16 x 16 texels, one dither cell each, so every block has a real texture. */
   var BS = 16, BPX = BS * CELL;
   var AIR = 0, GRASS = 1, DIRT = 2, STONE = 3, DEEP = 4, BEDROCK = 5, PLANKS = 6, FENCE = 7, RAIL = 8, TORCH = 9,
@@ -335,8 +339,24 @@
       }
     }
     world = { cols: cols, rows: rows, top: top, surf: surf, ids: ids, hcol: hcol, wc: cols * BS, hc: rows * BS };
+    // smooth lighting: each texel column blends the two nearest block centres (tables so the frame loop stays cheap)
+    var wc = cols * BS; world.c0 = new Int16Array(wc); world.c1 = new Int16Array(wc); world.tx = new Float32Array(wc);
+    for (var xx = 0; xx < wc; xx++) {
+      var fx = (xx - 7.5) / BS, a0 = Math.max(0, Math.floor(fx));
+      world.c0[xx] = a0; world.c1[xx] = Math.min(cols - 1, a0 + 1); world.tx[xx] = Math.max(0, Math.min(1, fx - a0));
+    }
     placed.forEach(function (p) { setTorch(p.x, p.y); });
     lightWorld();
+    // #demo-cave (for screenshots): park the "mouse" in the biggest cavern on screen
+    if (/^#demo-cave/.test(location.hash)) {
+      var best = -1, bestN = 0;
+      for (var bi = 0; bi < ids.length; bi += 3) {
+        var bxp = (bi % cols) * BPX + BPX / 2, byp = top + ((bi / cols) | 0) * BPX + BPX / 2 - sy;
+        if (byp < 0 || byp > innerHeight || blockAt(bxp, byp + sy) < 0) continue;
+        var cnt = caveLight(bi).idx.length; if (cnt > bestN) { bestN = cnt; best = bi; }
+      }
+      if (best >= 0) { mouse.x = ((best % cols) * BPX + BPX / 2) / CELL; mouse.y = (top + ((best / cols) | 0) * BPX + BPX / 2 - sy) / CELL; }
+    }
   }
 
   // Light like the game: levels 0-15 spread one block at a time through air (and other see-through blocks).
@@ -354,36 +374,74 @@
       }
     }
   }
+  // Fixed light: daylight on the surface (fading out a few blocks down, and into caves that open to the sky) and
+  // the torches the visitor placed. Everything else underground stays black until the mouse lights it.
   function lightWorld() {
     var w = world; if (!w) return;
-    var n = w.cols * w.rows, sky = new Uint8Array(n), blk = new Uint8Array(n), qs = [], qb = [], i;
+    var n = w.cols * w.rows, sky = new Uint8Array(n), qs = [], i;
     for (var c = 0; c < w.cols; c++) for (var r = 0; r < w.hcol[c]; r++) {
       i = r * w.cols + c; if (SEETHRU[w.ids[i]]) { sky[i] = 15; qs.push(i); }
     }
-    for (i = 0; i < n; i++) {
-      if (w.ids[i] === TORCH) { blk[i] = 14; qb.push(i); } else if (w.ids[i] === LAVA) { blk[i] = 15; qb.push(i); }
-    }
-    spread(sky, qs); spread(blk, qb);
-    var bl = new Float32Array(n), DAY = FLAT ? 0.75 : 1;              // dusk daylight is dimmer
+    spread(sky, qs);
+    var base = new Float32Array(n), DAY = FLAT ? 0.75 : 1;            // dusk daylight is dimmer
     for (i = 0; i < n; i++) {
       var depth = ((i / w.cols) | 0) - w.hcol[i % w.cols];
-      var L = Math.max(Math.pow(sky[i] / 15, 1.4) * DAY, Math.pow(blk[i] / 15, 1.4));
-      if (depth >= 0) L = Math.max(L, AMB + (DAY - AMB) * Math.exp(-depth / 2.2));   // daylight soaks a few blocks into the ground
-      if (w.ids[i] === TORCH || w.ids[i] === LAVA) L = 1;
-      bl[i] = L;
+      var L = Math.pow(sky[i] / 15, 2.2) * DAY;
+      if (depth >= 0) L = Math.max(L, DAY * Math.exp(-depth / 1.3));
+      base[i] = L;
     }
-    // Smooth lighting: every texel blends the light of the four nearest block centres.
-    var wc = w.wc, hc = w.hc, lm = new Float32Array(wc * hc);
-    for (var y = 0; y < hc; y++) {
-      var fy = (y - 7.5) / BS, r0 = Math.max(0, Math.floor(fy)), r1 = Math.min(w.rows - 1, r0 + 1), ty = Math.max(0, Math.min(1, fy - r0));
-      for (var x = 0; x < wc; x++) {
-        var fx = (x - 7.5) / BS, c0 = Math.max(0, Math.floor(fx)), c1 = Math.min(w.cols - 1, c0 + 1), tx = Math.max(0, Math.min(1, fx - c0));
-        var a = bl[r0 * w.cols + c0], b = bl[r0 * w.cols + c1], e = bl[r1 * w.cols + c0], d = bl[r1 * w.cols + c1];
-        var top = a + (b - a) * tx;
-        lm[y * wc + x] = top + (e + (d - e) * tx - top) * ty;
+    w.cache = {};
+    placed.forEach(function (p) {
+      var k = blockAt(p.x, p.y); if (k < 0) return;
+      var s = caveLight(k); for (var m = 0; m < s.idx.length; m++) if (s.v[m] > base[s.idx[m]]) base[s.idx[m]] = s.v[m];
+    });
+    w.base = base; w.lit = new Float32Array(n);
+  }
+  // Light from one spot in a cave: like a torch held there, spreading block by block through the open cave (and onto
+  // its walls), fading with distance. Reaches about 22 blocks, so a whole cavern lights up. Cached per spot.
+  var REACH = 22;
+  function caveLight(i0) {
+    var w = world;
+    if (w.cache[i0]) return w.cache[i0];
+    var cols = w.cols, n = w.ids.length, lv = new Uint8Array(n), q = [i0], idx = [], v = [];
+    lv[i0] = REACH;
+    for (var h = 0; h < q.length; h++) {
+      var i = q[h], l = lv[i] - 1; if (l <= 0) continue;
+      var c = i % cols, nb = [c > 0 ? i - 1 : -1, c < cols - 1 ? i + 1 : -1, i - cols, i + cols];
+      for (var k = 0; k < 4; k++) {
+        var m = nb[k];
+        if (m < 0 || m >= n || lv[m] >= l) continue;
+        lv[m] = l;
+        if (SEETHRU[w.ids[m]] && ((m / cols) | 0) > w.hcol[m % cols]) q.push(m);   // stays underground
       }
     }
-    w.lmap = lm;
+    // bright near you, with a gentle fade towards the far end of the cave
+    for (var j = 0; j < n; j++) if (lv[j]) { idx.push(j); v.push(Math.min(1, 1.15 * Math.pow(lv[j] / REACH, 0.55))); }
+    return (w.cache[i0] = { idx: idx, v: v });
+  }
+  // The underground see-through block at a page position, or -1 (rock, sky, or outside the world).
+  function blockAt(x, y) {
+    var w = world, c = Math.floor(x / BPX), r = Math.floor((y - w.top) / BPX);
+    if (c < 0 || c >= w.cols || r < 0 || r >= w.rows || r <= w.hcol[c]) return -1;
+    var i = r * w.cols + c;
+    return SEETHRU[w.ids[i]] ? i : -1;
+  }
+  var glows = [], lastNow = 0;   // caverns lit by the mouse: each fades in while the mouse is inside, then fades out
+  function updateGlows(now, sy, flick) {
+    var w = world, dt = Math.min(100, now - (lastNow || now)); lastNow = now;
+    var hx = touchTorch ? innerWidth * 0.5 : mouse.x * CELL, hy = touchTorch ? innerHeight * 0.55 : mouse.y * CELL;
+    var hov = (touchTorch || mouse.x > -900) ? blockAt(hx, hy + sy) : -1, found = false;
+    for (var g = 0; g < glows.length; g++) if (glows[g].i === hov) found = true;
+    if (hov >= 0 && !found) glows.push({ i: hov, a: 0 });
+    var lit = w.lit; lit.set(w.base);
+    for (g = glows.length - 1; g >= 0; g--) {
+      var s = glows[g], on = s.i === hov;
+      s.a += ((on ? 1 : 0) - s.a) * (1 - Math.exp(-dt / (on ? 90 : 500)));
+      if (!on && s.a < 0.01) { glows.splice(g, 1); continue; }
+      var L = caveLight(s.i), f = s.a * (on ? flick : 1);
+      for (var m = 0; m < L.idx.length; m++) { var val = L.v[m] * f; if (val > lit[L.idx[m]]) lit[L.idx[m]] = val; }
+    }
+    return glows.length > 0;
   }
   function setTorch(x, y) {   // page coordinates; only into an empty underground spot
     var w = world, c = Math.floor(x / BPX), r = Math.floor((y - w.top) / BPX);
@@ -542,16 +600,18 @@
     var j = 0, frontRow = Math.floor(front), sy2 = window.pageYOffset || 0, wd = world;
     // the torch flickers a little
     var flick = reduce ? 1 : 0.88 + 0.12 * vnoise(now * 0.006, 0.5, 5);
-    var tmx = W * 0.5, tmy = H * 0.55, TR = 75 * K, TR2 = TR * TR;   // phones: the torch rides in the middle of the screen
-    if (wd && !reduce && ((touchTorch && sy2 + innerHeight > wd.surf) ||
-        (mouse.x > -900 && mouse.y * CELL + sy2 > wd.surf))) busy = true;
+    if (wd && wd.base && updateGlows(now, sy2, flick)) busy = true;
     for (var y = 0; y < H; y++) {
       var by = (y & 7) * 8;
       if (y > frontRow) { for (var x0 = 0; x0 < W; x0++) px[j++] = 0; continue; }
       var band = frontRow - y < 6 * K && front < H + 30 ? 0.22 * (1 - (frontRow - y) / (6 * K)) : 0;
       var wy = wd ? Math.floor((y * CELL + sy2 - wd.top) / CELL) : -1, inW = wy >= 0;
       if (inW && wy >= wd.hc) { for (x0 = 0; x0 < W; x0++) px[j++] = 0; continue; }
-      var br = wy >> 4, tyy = (wy & 15) * 16, lrow = inW ? wy * wd.wc : 0;
+      var br = wy >> 4, tyy = (wy & 15) * 16, ro0 = 0, ro1 = 0, ty = 0;
+      if (inW) {
+        var fy = (wy - 7.5) / BS, r0 = Math.max(0, Math.floor(fy));
+        ty = Math.max(0, Math.min(1, fy - r0)); ro0 = r0 * wd.cols; ro1 = Math.min(wd.rows - 1, r0 + 1) * wd.cols;
+      }
       for (var x = 0; x < W; x++, j++) {
         var th = BAYER[by + (x & 7)];
         if (inW && (x >> 4) < wd.cols) {
@@ -561,13 +621,12 @@
           if (tone || underground) {
             // Unlit underground is dark. In dark mode that is just the page background; in light mode it is drawn
             // in a near-black (except right around text, which keeps a soft pocket of page colour so it stays readable).
-            if (!tone) { px[j] = CAVE && vis[j] * 0.94 > th ? CAVE : 0; continue; }
-            var L = wd.lmap[lrow + x] + (field[j] - base[j]) * 3.6 * flick;   // only the torch, not the sky density
-            if (touchTorch) {
-              var ddx = x - tmx, ddy = y - tmy, d2 = ddx * ddx + ddy * ddy;
-              if (d2 < TR2) { var q = 1 - d2 / TR2; L += 1.1 * q * q * flick; }
-            }
-            px[j] = tone * L * vis[j] > th ? T.col[k2] : (CAVE && vis[j] * 0.94 > th ? CAVE : 0);
+            if (!tone) { px[j] = 0; continue; }                   // underground air: black
+            var LT = wd.lit, C0 = wd.c0[x], C1 = wd.c1[x], tx = wd.tx[x];
+            var la = LT[ro0 + C0], lb = LT[ro0 + C1], le = LT[ro1 + C0], ld = LT[ro1 + C1];
+            if (!(la || lb || le || ld)) { px[j] = 0; continue; }   // unlit rock: black
+            var tp = la + (lb - la) * tx, L = tp + (le + (ld - le) * tx - tp) * ty;
+            px[j] = tone * L * vis[j] > th ? T.col[k2] : 0;
             continue;
           }
         }
