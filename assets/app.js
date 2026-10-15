@@ -766,7 +766,7 @@
   // Remove the field (or rebuild dl/ with build_site.py) to ask for the password again.
   fetch('dl/meta.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (m) {
     meta = m; openPw = m.open || null;
-    if (openPw) document.querySelectorAll('.pw-only').forEach(function (el) { el.hidden = true; });
+    if (openPw) { document.querySelectorAll('.pw-only').forEach(function (el) { el.hidden = true; }); pw.value = openPw; unlock(true); }
   }).catch(function () {});
 
   function say(text, cls) { msg.textContent = text; msg.className = 'unlock-msg' + (cls ? ' ' + cls : ''); }
@@ -814,9 +814,9 @@
   }
 
   form.addEventListener('submit', function (e) { e.preventDefault(); unlock(); });
-  function unlock() {
-    if (!window.crypto || !crypto.subtle) { say('This browser can\'t unlock the download. Try Chrome, Edge, Safari or Firefox.', 'err'); return; }
-    say('Unlocking...');
+  function unlock(quiet) {   // quiet: just unlock (shows who's online), no download
+    if (!window.crypto || !crypto.subtle) { if (quiet) return; say('This browser can\'t unlock the download. Try Chrome, Edge, Safari or Firefox.', 'err'); return; }
+    if (!quiet) say('Unlocking...');
     (meta ? Promise.resolve(meta) : fetch('dl/meta.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }))
       .then(function (m) {
         meta = m;
@@ -832,7 +832,7 @@
         address = JSON.parse(new TextDecoder().decode(plain)).address;
         pw.value = '';
         startOnline();
-        return download();
+        return quiet ? null : download();
       })
       .catch(function (err) {
         key = null;

@@ -140,6 +140,10 @@ h1 {
 .step img { display: block; width: 100%; height: auto; }
 .step figcaption { padding: 6px 10px; font-size: 12px; color: var(--ink-2); border-top: 1px solid var(--line); background: var(--cap-bg); }
 
+.step-wide { grid-template-columns: 1fr; }   /* a text-only card (no picture) */
+.shaders { padding-top: 0; }
+.shaders .step h3 { margin-top: 0; }
+
 /* Footer */
 .foot { text-align: center; padding: 28px 0 150px; border-top: 1px solid var(--line); }   /* room for the bedrock floor */
 .online { margin: 0 0 10px; font: 700 17px var(--sans); display: inline-flex; align-items: center; gap: 10px; }
