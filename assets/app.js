@@ -39,18 +39,33 @@
     return v / 0.9375;
   }
   function smooth(a, b, x) { var u = Math.max(0, Math.min(1, (x - a) / (b - a))); return u * u * (3 - 2 * u); }
-  // Dot colours (little-endian ABGR). Light mode: blue sky dots on white; clouds are white with grey-blue shadows.
-  // Dark mode: deep blue sky on near-black; clouds are pale grey with darker shadows.
-  var LIGHT = { dot: 0xFFEDD0B4, bolt: 0xFFCDA08C, cloud: 0, shade: 0xFFE2D3C6, flash: 0.6 };            // sky #b4d0ed, shadow #c6d3e2
-  var DARK = { dot: 0xFF5A3A24, bolt: 0xFF9A7458, cloud: 0xFFBDB6B0, shade: 0xFF80726A, flash: 0.25 };   // sky #243a5a, cloud #b0b6bd, shadow #6a7280
+  // Colours. Light mode: a blue daytime sky on white; clouds are white with grey-blue shadows.
+  // Dark mode: dusk, just after the sun has set. The sky runs from deep indigo at the top through violet and rose
+  // to a warm orange glow low down; clouds have dusky lavender tops and undersides lit pink-orange by the sun below the horizon.
+  function rgb(hex) { var n = parseInt(hex.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+  function pack(c) { return (0xFF000000 | (c[2] << 16) | (c[1] << 8) | c[0]) >>> 0; }   // canvas pixels are little-endian ABGR
+  var LIGHT = { sky: ['#b4d0ed'], bolt: '#8ca0cd', cloud: null, shade: '#c6d3e2', flash: 0.6, flat: false };
+  var DARK = { sky: ['#252a5e', '#4b3a7c', '#8a4a82', '#c8607a', '#e88a5c'], bolt: '#b9a6d8',
+               cloud: '#6e6890', shade: '#d98a7a', flash: 0.25, flat: true };
   var dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)');
-  var DOT, BOLT, CLOUD, SHADE, FLASH;
-  function pickTheme() { var c = dark && dark.matches ? DARK : LIGHT; DOT = c.dot; BOLT = c.bolt; CLOUD = c.cloud; SHADE = c.shade; FLASH = c.flash; }
+  var SKY, BOLT, CLOUD, SHADE, FLASH, FLAT;
+  function pickTheme() {
+    var c = dark && dark.matches ? DARK : LIGHT;
+    SKY = c.sky.map(rgb); BOLT = pack(rgb(c.bolt)); CLOUD = c.cloud ? pack(rgb(c.cloud)) : 0;
+    SHADE = pack(rgb(c.shade)); FLASH = c.flash; FLAT = c.flat;
+  }
+  // Sky colour at u (0 = top of the sky, 1 = where it fades out), blended between the theme's colour stops.
+  function skyColour(u) {
+    if (SKY.length === 1) return pack(SKY[0]);
+    var s = Math.max(0, Math.min(1, u)) * (SKY.length - 1), i = Math.min(SKY.length - 2, Math.floor(s)), f = s - i;
+    var a = SKY[i], b = SKY[i + 1];
+    return pack([Math.round(a[0] + (b[0] - a[0]) * f), Math.round(a[1] + (b[1] - a[1]) * f), Math.round(a[2] + (b[2] - a[2]) * f)]);
+  }
   pickTheme();
-  var SKY_MAX = 0.42, SKY_REACH = 0.78;           // night sky: dot density at the top, and how far down (fraction of the window) it fades to white
+  var SKY_MAX = 0.42, SKY_REACH = 0.78;           // sky: dot density at the top, and how far down (fraction of the window) it fades out
   var cv = document.getElementById('dither');
   var ctx = cv.getContext('2d');
-  var W = 0, H = 0, noise, base, field, img, px;
+  var W = 0, H = 0, noise, base, field, img, px, rowCol;   // rowCol: the sky dot colour for each row
   var mouse = { x: -999, y: -999 };
   var trail = [];                                 // recent pointer positions; each fades out over TRAIL_MS
   var TRAIL_MS = 1100, TRAIL_R = 40 * K;
@@ -70,7 +85,7 @@
     W = Math.max(1, Math.ceil((innerWidth || document.documentElement.clientWidth || 1) / CELL));
     H = Math.max(1, Math.ceil((innerHeight || document.documentElement.clientHeight || 1) / CELL));
     cv.width = W; cv.height = H;
-    img = ctx.createImageData(W, H); px = new Uint32Array(img.data.buffer);
+    img = ctx.createImageData(W, H); px = new Uint32Array(img.data.buffer); rowCol = new Uint32Array(H);
     noise = new Float32Array(W * H); cloud = new Float32Array(W * H); shade = new Float32Array(W * H); boltOn = new Uint8Array(W * H); base = new Float32Array(W * H); field = new Float32Array(W * H);
     for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
       // Faint large-scale haze so the sky isn't a perfectly flat gradient, plus a little per-dot jitter that hides
@@ -88,8 +103,10 @@
     var reach = innerHeight * SKY_REACH, sy = window.pageYOffset || 0;
     for (var y = 0; y < H; y++) {
       var t = 1 - (y * CELL + sy) / reach, row = y * W;
+      rowCol[y] = skyColour(1 - t);
       if (t <= 0) { for (var x0 = 0; x0 < W; x0++) base[row + x0] = 0; continue; }
-      var prof = SKY_MAX * Math.pow(t, 1.35);
+      // Day: thins out steadily. Dusk: stays fuller lower down, so the warm glow near the horizon shows.
+      var prof = FLAT ? SKY_MAX * (0.55 * Math.pow(t, 1.2) + 0.45 * smooth(0, 0.55, t)) : SKY_MAX * Math.pow(t, 1.35);
       for (var x = 0; x < W; x++) base[row + x] = prof * (0.8 + 0.4 * noise[row + x]);
     }
   }
@@ -316,7 +333,7 @@
           // inside a cloud: lit parts are white (light mode) or pale grey (dark mode); shadows dither in a darker tone
           // (th / c re-spreads the same dither threshold over just the cloud's cells, so the shading dithers cleanly)
           px[j] = shade[j] * 0.8 > th / c ? SHADE : CLOUD;
-        } else px[j] = v > th ? (boltOn[j] ? BOLT : DOT) : 0;
+        } else px[j] = v > th ? (boltOn[j] ? BOLT : rowCol[y]) : 0;
       }
     }
     ctx.putImageData(img, 0, 0);

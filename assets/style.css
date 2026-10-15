@@ -21,25 +21,26 @@
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color-scheme: light dark;
 }
+/* Dark mode = dusk: a deep blue-violet night colour behind a sunset sky. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #131416;
-    --panel: #1b1c1f;
-    --ink: #ececec;
-    --on-ink: #131416;
-    --ink-2: #a3a3a8;
-    --line: #36373c;
-    --shot-bg: #101113;
-    --cap-bg: #1b1c1f;
+    --bg: #15131f;
+    --panel: #1e1b2b;
+    --ink: #eeeaf2;
+    --on-ink: #15131f;
+    --ink-2: #aaa3b8;
+    --line: #3a3450;
+    --shot-bg: #110f19;
+    --cap-bg: #1e1b2b;
     --mac: #3a78e6;
     --win: #4a9a2b;
-    --c-mac: #7aa8ff;
-    --c-win: #86d466;
-    --ok: #86d466;
-    --err: #ff8a80;
-    --grey-btn: #2b2c30;
-    --grey-btn-dark: #5b5c61;
-    --btn-base: #2b2c30;
+    --c-mac: #8fb0ff;
+    --c-win: #8fd66e;
+    --ok: #8fd66e;
+    --err: #ff9a8a;
+    --grey-btn: #2c2840;
+    --grey-btn-dark: #5e5873;
+    --btn-base: #2c2840;
   }
 }
 * { box-sizing: border-box; border-radius: 0 !important; }
