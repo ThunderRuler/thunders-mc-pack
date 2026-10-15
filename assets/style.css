@@ -1,18 +1,46 @@
 /* ThundersMC Pack: white and grey, square corners, plain system font, a night-sky dither canvas behind everything. */
+/* Colours are variables so light and dark mode (the visitor's system setting) only swap values. */
 :root {
   --bg: #f6f6f5;
   --panel: #ffffff;
   --ink: #1c1c1c;
+  --on-ink: #ffffff;           /* text on an --ink background */
   --ink-2: #5c5c5c;
   --line: #d4d4d2;
+  --shot-bg: #ededeb;
+  --cap-bg: #fafaf9;
   --mac: #2f6fdc;
-  --mac-dark: #1f4fa3;
   --win: #4c9a2a;
-  --win-dark: #356d1c;
+  --c-mac: #2f6fdc;            /* coloured words in the text */
+  --c-win: #356d1c;
+  --ok: #356d1c;
+  --err: #b3261e;
   --grey-btn: #e4e4e2;
   --grey-btn-dark: #a9a9a6;
+  --btn-base: #1c1c1c;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color-scheme: light;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131416;
+    --panel: #1b1c1f;
+    --ink: #ececec;
+    --on-ink: #131416;
+    --ink-2: #a3a3a8;
+    --line: #36373c;
+    --shot-bg: #101113;
+    --cap-bg: #1b1c1f;
+    --mac: #3a78e6;
+    --win: #4a9a2b;
+    --c-mac: #7aa8ff;
+    --c-win: #86d466;
+    --ok: #86d466;
+    --err: #ff8a80;
+    --grey-btn: #2b2c30;
+    --grey-btn-dark: #5b5c61;
+    --btn-base: #2b2c30;
+  }
 }
 * { box-sizing: border-box; border-radius: 0 !important; }
 html { -webkit-text-size-adjust: 100%; }
@@ -50,7 +78,7 @@ h1 {
 .btn {
   position: relative; display: block; width: 100%; height: 60px; padding: 0 56px;
   font: 700 19px/56px var(--sans); text-align: center; text-decoration: none; color: #fff;
-  border: 2px solid var(--ink); cursor: pointer; background: var(--ink);
+  border: 2px solid var(--ink); cursor: pointer; background: var(--btn-base);
   transition: transform .08s ease, filter .15s ease;
 }
 .btn:hover { filter: brightness(1.08); }
@@ -59,7 +87,7 @@ h1 {
 .btn-no {
   position: absolute; left: 12px; top: 50%; width: 30px; height: 30px; margin-top: -15px;
   display: grid; place-items: center; font: 800 17px/1 var(--sans);
-  background: #fff; color: var(--ink); border: 2px solid var(--ink);
+  background: #fff; color: #1c1c1c; border: 2px solid var(--ink);
 }
 .btn-prism { background: var(--grey-btn); color: var(--ink); }
 .btn-mac { background: var(--mac); }
@@ -78,15 +106,15 @@ h1 {
 .unlock-row[hidden] { display: none; }
 .unlock input {
   min-width: 0; height: 48px; font: 17px var(--sans); padding: 0 12px;
-  border: 2px solid var(--ink); background: #fff; color: var(--ink);
+  border: 2px solid var(--ink); background: var(--panel); color: var(--ink);
 }
 .btn-go { height: 48px; padding: 0 8px; font-size: 17px; line-height: 44px; }
 .unlock[data-platform="mac"] .btn-go { background: var(--mac); }
 .unlock[data-platform="windows"] .btn-go { background: var(--win); }
 .unlock-msg { margin: 0; font-size: 14px; color: var(--ink-2); }
 .unlock-msg:not(:empty) { margin-top: 10px; }
-.unlock-msg.err { color: #b3261e; }
-.unlock-msg.ok { color: var(--win-dark); }
+.unlock-msg.err { color: var(--err); }
+.unlock-msg.ok { color: var(--ok); }
 .fineprint { margin: 4px 0 0; font-size: 13px; color: var(--ink-2); }
 
 /* Steps */
@@ -99,16 +127,16 @@ h1 {
 }
 .step-no {
   margin: 0 0 8px; width: 34px; height: 34px; display: grid; place-items: center;
-  font: 800 18px var(--sans); background: var(--ink); color: #fff;
+  font: 800 18px var(--sans); background: var(--ink); color: var(--on-ink);
 }
 .step h3 { margin: 0 0 8px; font: 800 24px var(--sans); letter-spacing: -0.02em; }
 .step p { margin: 0 0 10px; }
 .note { font-size: 14px; color: var(--ink-2); }
-.c-mac { color: var(--mac); }
-.c-win { color: var(--win-dark); }
-.step figure { margin: 0; border: 1px solid var(--line); background: #ededeb; }
+.c-mac { color: var(--c-mac); }
+.c-win { color: var(--c-win); }
+.step figure { margin: 0; border: 1px solid var(--line); background: var(--shot-bg); }
 .step img { display: block; width: 100%; height: auto; }
-.step figcaption { padding: 6px 10px; font-size: 12px; color: var(--ink-2); border-top: 1px solid var(--line); background: #fafaf9; }
+.step figcaption { padding: 6px 10px; font-size: 12px; color: var(--ink-2); border-top: 1px solid var(--line); background: var(--cap-bg); }
 
 /* Footer */
 .foot { text-align: center; padding: 28px 0 56px; border-top: 1px solid var(--line); }

@@ -8,8 +8,13 @@
   /* ------------------------------------------------------------------ dither */
   var CELL = 3;                                   // CSS pixels per dither cell
   var BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(function (v) { return (v + 0.5) / 16; });
-  var DOT = 0xFFCBCECE;                           // #cecece (little-endian ABGR): 20% less contrast than before
-  var BOLT = 0xFFCDA08C;                          // lightning dots (#8ca0cd): an electric blue-grey, clearly stronger than the sky
+  // Dot colours (little-endian ABGR). Light mode: pale grey dots on white. Dark mode: dim stars on near-black.
+  var LIGHT = { dot: 0xFFCBCECE, bolt: 0xFFCDA08C };   // #cecece, #8ca0cd
+  var DARK = { dot: 0xFF4A4642, bolt: 0xFFFFC08F };    // #42464a, #8fc0ff
+  var dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)');
+  var DOT = LIGHT.dot, BOLT = LIGHT.bolt;
+  function pickTheme() { var c = dark && dark.matches ? DARK : LIGHT; DOT = c.dot; BOLT = c.bolt; }
+  pickTheme();
   var SKY_MAX = 0.42, SKY_REACH = 0.78;           // night sky: dot density at the top, and how far down (fraction of the window) it fades to white
   var cv = document.getElementById('dither');
   var ctx = cv.getContext('2d');
@@ -218,6 +223,8 @@
       }
     }
   }
+
+  if (dark && dark.addEventListener) dark.addEventListener('change', function () { pickTheme(); kick(); });
 
   function kick() { if (!running) { running = true; requestAnimationFrame(frame); } }
 
