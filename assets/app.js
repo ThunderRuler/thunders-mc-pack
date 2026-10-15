@@ -44,15 +44,15 @@
   // to a warm orange glow low down; clouds have dusky lavender tops and undersides lit pink-orange by the sun below the horizon.
   function rgb(hex) { var n = parseInt(hex.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
   function pack(c) { return (0xFF000000 | (c[2] << 16) | (c[1] << 8) | c[0]) >>> 0; }   // canvas pixels are little-endian ABGR
-  var LIGHT = { sky: ['#b4d0ed'], bolt: '#8ca0cd', cloud: null, shade: '#c6d3e2', flash: 0.6, flat: false };
+  var LIGHT = { sky: ['#b4d0ed'], bolt: '#8ca0cd', cloud: null, shade: '#c6d3e2', flash: 0.6, flat: false, amb: 0.18, cave: '#1c1b21' };
   var DARK = { sky: ['#252a5e', '#4b3a7c', '#8a4a82', '#c8607a', '#e88a5c'], bolt: '#b9a6d8',
-               cloud: '#6e6890', shade: '#d98a7a', flash: 0.25, flat: true };
+               cloud: '#6e6890', shade: '#d98a7a', flash: 0.25, flat: true, amb: 0.14 };
   var dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)');
-  var SKY, BOLT, CLOUD, SHADE, FLASH, FLAT;
+  var SKY, BOLT, CLOUD, SHADE, FLASH, FLAT, AMB, CAVE;
   function pickTheme() {
     var c = dark && dark.matches ? DARK : LIGHT;
     SKY = c.sky.map(rgb); BOLT = pack(rgb(c.bolt)); CLOUD = c.cloud ? pack(rgb(c.cloud)) : 0;
-    SHADE = pack(rgb(c.shade)); FLASH = c.flash; FLAT = c.flat;
+    SHADE = pack(rgb(c.shade)); FLASH = c.flash; FLAT = c.flat; AMB = c.amb; CAVE = c.cave ? pack(rgb(c.cave)) : 0;
   }
   // Sky colour at u (0 = top of the sky, 1 = where it fades out), blended between the theme's colour stops.
   function skyColour(u) {
@@ -65,7 +65,7 @@
   var SKY_MAX = 0.42, SKY_REACH = 0.78;           // sky: dot density at the top, and how far down (fraction of the window) it fades out
   var cv = document.getElementById('dither');
   var ctx = cv.getContext('2d');
-  var W = 0, H = 0, noise, base, field, img, px, rowCol;   // rowCol: the sky dot colour for each row
+  var W = 0, H = 0, noise, base, field, img, px, rowCol, vis;   // vis: 1, or less near text   // rowCol: the sky dot colour for each row
   var mouse = { x: -999, y: -999 };
   var trail = [];                                 // recent pointer positions; each fades out over TRAIL_MS
   var TRAIL_MS = 1100, TRAIL_R = 40 * K;
@@ -85,7 +85,7 @@
     W = Math.max(1, Math.ceil((innerWidth || document.documentElement.clientWidth || 1) / CELL));
     H = Math.max(1, Math.ceil((innerHeight || document.documentElement.clientHeight || 1) / CELL));
     cv.width = W; cv.height = H;
-    img = ctx.createImageData(W, H); px = new Uint32Array(img.data.buffer); rowCol = new Uint32Array(H);
+    img = ctx.createImageData(W, H); px = new Uint32Array(img.data.buffer); rowCol = new Uint32Array(H); vis = new Float32Array(W * H);
     noise = new Float32Array(W * H); cloud = new Float32Array(W * H); shade = new Float32Array(W * H); boltOn = new Uint8Array(W * H); base = new Float32Array(W * H); field = new Float32Array(W * H);
     for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
       // Faint large-scale haze so the sky isn't a perfectly flat gradient, plus a little per-dot jitter that hides
@@ -95,18 +95,21 @@
     if (!bolts.length && !reduce && !demo) planStorm();
     if (!clouds.length) planClouds();
     bolts.forEach(function (b) { b.mask = makeBolt(b); });
+    buildWorld();
     kick();
   }
 
   // Sky: densest at the top of the page, thinning out smoothly until it is plain background. Tied to the page, so it scrolls away.
   function computeBase() {
-    var reach = innerHeight * SKY_REACH, sy = window.pageYOffset || 0;
+    var reach = world ? world.surf : innerHeight * SKY_REACH, sy = window.pageYOffset || 0;
     for (var y = 0; y < H; y++) {
       var t = 1 - (y * CELL + sy) / reach, row = y * W;
       rowCol[y] = skyColour(1 - t);
+      if (world) t = Math.max(0.001, t);           // with the world below, the sky runs all the way down to the horizon
       if (t <= 0) { for (var x0 = 0; x0 < W; x0++) base[row + x0] = 0; continue; }
       // Day: thins out steadily. Dusk: stays fuller lower down, so the warm glow near the horizon shows.
       var prof = FLAT ? SKY_MAX * (0.55 * Math.pow(t, 1.2) + 0.45 * smooth(0, 0.55, t)) : SKY_MAX * Math.pow(t, 1.35);
+      if (world) prof = FLAT ? SKY_MAX * (0.5 + 0.5 * Math.pow(t, 1.2)) : SKY_MAX * (0.22 + 0.78 * Math.pow(t, 1.35));
       for (var x = 0; x < W; x++) base[row + x] = prof * (0.8 + 0.4 * noise[row + x]);
     }
   }
@@ -186,6 +189,221 @@
         }
       }
     }
+  }
+
+  /* ------------------------------------------------------------------ world
+     Below the sky the page is a slice of a Minecraft world: grass, dirt and a few trees at the surface, then stone with
+     caves, ores and an old mineshaft, deepslate (with the diamonds) lower down, lava lakes near the bottom and bedrock at
+     the very end of the page. Underground is dark like the real game: skylight only reaches a few blocks down, the
+     mineshaft's torches and the lava glow on their own, and the mouse is your torch (on phones a torch rides along in the
+     middle of the screen). Clicking an empty spot in a cave places a torch there.
+     Blocks are 32 CSS px: 16 x 16 texels, one dither cell each, so every block has a real texture. */
+  var BS = 16, BPX = BS * CELL;
+  var AIR = 0, GRASS = 1, DIRT = 2, STONE = 3, DEEP = 4, BEDROCK = 5, PLANKS = 6, FENCE = 7, RAIL = 8, TORCH = 9,
+      LAVA = 10, COBWEB = 11, LOG = 12, LEAVES = 13, ORE = 16;     // ores: ORE + 2 * kind (+1 when set in deepslate)
+  // coal, iron, lapis, gold, redstone, diamond
+  var ORES = [['#2b2b2b', '#4a4a4a'], ['#e3b896', '#b98c69'], ['#2f62d6', '#1f3f94'], ['#fde24e', '#d6a420'],
+              ['#e5301f', '#a01510'], ['#6ff0f0', '#2bbcc4']];
+  var SEETHRU = new Uint8Array(32);                                // blocks light passes through
+  [AIR, FENCE, RAIL, TORCH, LAVA, COBWEB, LEAVES].forEach(function (b) { SEETHRU[b] = 1; });
+  var worldSeed = Math.floor(Math.random() * 1e6), world = null, placed = [];
+  var touchTorch = window.matchMedia && matchMedia('(hover: none)').matches;
+
+  function makeTextures() {
+    var P = {
+      stone: ['#8e8e8e', '#767676', '#616161'], dirt: ['#8b5e3b', '#6c4529', '#a3714b'], grass: ['#6db33f', '#55962f'],
+      deep: ['#5a5a62', '#48484f', '#38383e'], bedrock: ['#9a9a9a', '#5a5a5a', '#2c2c2c'],
+      planks: ['#b08d55', '#94733f', '#6f5329'], log: ['#6e5433', '#54402a'], leaves: ['#4a9a32', '#367a24'],
+      lava: ['#ffc23a', '#ff8a1e', '#e0501a'], torch: ['#8a6b3b', '#ffe066', '#ffa22e'], rail: ['#a8a8a8', '#6f5329'], web: '#e6e6e6'
+    };
+    function T(fn) {
+      var tone = new Float32Array(256), col = new Uint32Array(256);
+      for (var y = 0; y < 16; y++) for (var x = 0; x < 16; x++) {
+        var r = fn(x, y); if (r) { tone[y * 16 + x] = r[1]; col[y * 16 + x] = pack(rgb(r[0])); }
+      }
+      return { tone: tone, col: col };
+    }
+    function stoneFn(x, y) { var n = vnoise(x / 2.6, y / 2.6, 11) * 0.7 + hash(x, y, 12) * 0.3; return [n > 0.62 ? P.stone[0] : n < 0.38 ? P.stone[2] : P.stone[1], 0.9]; }
+    function deepFn(x, y) { var n = vnoise(x / 4, y / 1.4, 41) * 0.7 + hash(x, y, 42) * 0.3; return [n > 0.62 ? P.deep[0] : n < 0.4 ? P.deep[2] : P.deep[1], 0.9]; }
+    function dirtFn(x, y) { var h = hash(x, y, 21); return [h < 0.18 ? P.dirt[1] : h > 0.9 ? P.dirt[2] : P.dirt[0], 0.9]; }
+    var t = [];
+    t[STONE] = T(stoneFn); t[DEEP] = T(deepFn); t[DIRT] = T(dirtFn);
+    t[GRASS] = T(function (x, y) {   // green top with a ragged edge hanging down into the dirt
+      if (y < 3 + Math.floor(hash(x, 0, 31) * 3)) return [hash(x, y, 32) < 0.3 ? P.grass[1] : P.grass[0], 0.95];
+      return dirtFn(x, y);
+    });
+    t[BEDROCK] = T(function (x, y) { var n = vnoise(x / 1.8, y / 1.8, 51); return [n > 0.6 ? P.bedrock[0] : n > 0.35 ? P.bedrock[1] : P.bedrock[2], 0.95]; });
+    t[PLANKS] = T(function (x, y) {
+      var seam = (y & 3) === 3 || x === ((y >> 2) * 5 + 3) % 16;
+      return [seam ? P.planks[2] : hash(x, y, 61) < 0.2 ? P.planks[1] : P.planks[0], 0.9];
+    });
+    t[FENCE] = T(function (x) { return x >= 6 && x <= 9 ? [x === 9 ? P.planks[2] : P.planks[0], 0.9] : null; });
+    t[LOG] = T(function (x, y) { return [(x % 4 === 0 || hash(x, y, 71) < 0.12) ? P.log[1] : P.log[0], 0.9]; });
+    t[LEAVES] = T(function (x, y) { var h = hash(x, y, 81); return h < 0.22 ? null : [h < 0.5 ? P.leaves[1] : P.leaves[0], 0.9]; });
+    t[LAVA] = T(function (x, y) { var n = vnoise(x / 3, y / 3, 91); return [n > 0.62 ? P.lava[0] : n > 0.38 ? P.lava[1] : P.lava[2], 1]; });
+    t[TORCH] = T(function (x, y) {
+      if (x < 7 || x > 8) return null;
+      if (y >= 7) return [P.torch[0], 1];
+      if (y >= 5) return [y === 5 ? P.torch[1] : P.torch[2], 1];
+      return null;
+    });
+    t[RAIL] = T(function (x, y) { if (y === 13) return [P.rail[0], 0.95]; if (y >= 14 && (x & 3) < 2) return [P.rail[1], 0.9]; return null; });
+    t[COBWEB] = T(function (x, y) { return (x === y || x === 15 - y || x === 8 || y === 8) && hash(x, y, 101) < 0.75 ? [P.web, 0.8] : null; });
+    ORES.forEach(function (o, k) {
+      [stoneFn, deepFn].forEach(function (baseFn, dp) {
+        var seed = 120 + k * 7 + dp;
+        t[ORE + k * 2 + dp] = T(function (x, y) {
+          for (var c = 0; c < 4; c++) {   // four little clusters of ore in the stone
+            var cx = 2 + hash(c, seed, 111) * 12, cy = 2 + hash(seed, c, 112) * 12;
+            if (Math.hypot(x - cx, y - cy) < 1.4 + hash(c, c, seed)) return [hash(x, y, seed) < 0.6 ? o[0] : o[1], 1];
+          }
+          return baseFn(x, y);
+        });
+      });
+    });
+    return t;
+  }
+  var TEX = makeTextures();
+
+  function buildWorld() {
+    // The ground starts just under the "Four steps" heading, so the heading stands in the sky on the horizon.
+    var sy = window.pageYOffset || 0, mark = document.querySelector('.steps h2') || document.querySelector('.hero');
+    var surf = mark ? mark.getBoundingClientRect().bottom + sy + 10 : innerHeight;
+    var docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, innerHeight);
+    var cols = Math.ceil(innerWidth / BPX) + 1, sr = 8, top = surf - sr * BPX, rows = Math.ceil((docH - top) / BPX);
+    if (rows < sr + 24) { world = null; return; }
+    var S = worldSeed, ids = new Uint8Array(cols * rows), hcol = new Int16Array(cols), under = rows - sr;
+    var mainEl = document.querySelector('main'), mr = mainEl ? mainEl.getBoundingClientRect() : { left: 0, right: innerWidth };
+    for (var c = 0; c < cols; c++) hcol[c] = sr + Math.round(vnoise(c / 5, 0.5, S) * 3);   // gentle hills
+    for (var r = 0; r < rows; r++) for (c = 0; c < cols; c++) {
+      var h = hcol[c], id = AIR, d = (r - h) / under;                  // d: 0 at the surface, 1 at bedrock
+      if (r === h) id = GRASS;
+      else if (r > h && r <= h + 2 + (hash(c, 0, S) < 0.5 ? 1 : 0)) id = DIRT;
+      else if (r > h) {
+        id = d > 0.62 + 0.08 * (vnoise(c / 4, r / 4, S + 5) - 0.5) ? DEEP : STONE;
+        if (r > h + 5 && r < rows - 4) {                              // caves: big caverns plus long winding tunnels
+          var cheese = fbm(c / 9, r / 6, S + 1), spag = Math.abs(fbm(c / 14, r / 9, S + 2) - 0.5);
+          if (cheese > 0.69 - 0.08 * d || spag < 0.03) id = AIR;
+        }
+        if (id !== AIR) {                                             // ores, rarer and richer the deeper you go
+          var o = hash(c, r, S + 3), kind = -1;
+          if (o < 0.05 && d < 0.65) kind = 0;
+          else if (o < 0.085 && d > 0.08 && d < 0.8) kind = 1;
+          else if (o < 0.097 && d > 0.4) kind = 2;
+          else if (o < 0.11 && d > 0.45) kind = 3;
+          else if (o < 0.13 && d > 0.6) kind = 4;
+          else if (o < 0.139 && d > 0.75) kind = 5;
+          if (kind >= 0) id = ORE + kind * 2 + (id === DEEP ? 1 : 0);
+        }
+        if (id === AIR && r >= rows - 9) id = LAVA;                   // the lowest caves are flooded with lava
+      }
+      var fb = rows - 1 - r, hb = hash(c, r, S + 4);                  // a ragged bedrock floor
+      if (fb === 0 || (fb === 1 && hb < 0.8) || (fb === 2 && hb < 0.45) || (fb === 3 && hb < 0.15)) id = BEDROCK;
+      ids[r * cols + c] = id;
+    }
+    // Abandoned mineshafts: a 3-high corridor with rails, wooden supports every 5 blocks, torches and cobwebs.
+    var shafts = under > 60 ? 2 : 1;
+    for (var m = 0; m < shafts; m++) {
+      var ms = sr + Math.round(under * (0.28 + 0.34 * m + 0.08 * hash(m, 1, S)));
+      if (ms > rows - 12) continue;
+      var c0 = Math.floor(hash(m, 2, S) * cols * 0.25), c1 = cols - 1 - Math.floor(hash(m, 3, S) * cols * 0.25);
+      for (c = c0; c <= c1; c++) {
+        for (var rr = ms - 2; rr <= ms; rr++) ids[rr * cols + c] = AIR;
+        if ((c - c0) % 5 === 2) { ids[(ms - 2) * cols + c] = PLANKS; ids[(ms - 1) * cols + c] = FENCE; ids[ms * cols + c] = FENCE; }
+        else {
+          ids[ms * cols + c] = RAIL;
+          if (hash(c, ms, S + 6) < 0.12) ids[(ms - 2) * cols + c] = COBWEB;
+        }
+        if ((c - c0) % 5 === 3 && hash(c, m, S + 7) < 0.6) ids[(ms - 1) * cols + c] = TORCH;
+        var below = (ms + 1) * cols + c;
+        if (ids[below] === AIR || ids[below] === LAVA) ids[below] = PLANKS;   // plank bridges over caves
+      }
+    }
+    // A few oak trees, only beside the page content (never behind the title or buttons).
+    var lastTree = -9;
+    for (c = 2; c < cols - 2; c++) {
+      var xl = (c - 2) * BPX, xr = (c + 3) * BPX;
+      if (!(xr < mr.left - 8 || xl > mr.right + 8)) continue;
+      if (c - lastTree < 6 || hash(c, 9, S) > 0.35) continue;
+      lastTree = c;
+      var g = hcol[c], th = 4 + Math.floor(hash(c, 10, S) * 2);
+      for (var k = 1; k <= th; k++) ids[(g - k) * cols + c] = LOG;
+      for (var ly = g - th - 2; ly <= g - th + 1; ly++) for (var lx = c - 2; lx <= c + 2; lx++) {
+        var far = Math.abs(lx - c);
+        if ((far === 2 && (ly === g - th - 2 || ly === g - th + 1)) || (ly === g - th - 2 && far > 1) || ly < 0) continue;
+        if (!ids[ly * cols + lx]) ids[ly * cols + lx] = LEAVES;
+      }
+    }
+    world = { cols: cols, rows: rows, top: top, surf: surf, ids: ids, hcol: hcol, wc: cols * BS, hc: rows * BS };
+    placed.forEach(function (p) { setTorch(p.x, p.y); });
+    lightWorld();
+  }
+
+  // Light like the game: levels 0-15 spread one block at a time through air (and other see-through blocks).
+  function spread(lv, q) {
+    var w = world, cols = w.cols, n = lv.length;
+    for (var h = 0; h < q.length; h++) {
+      var i = q[h], l = lv[i] - 1; if (l <= 0) continue;
+      var c = i % cols;
+      var nb = [c > 0 ? i - 1 : -1, c < cols - 1 ? i + 1 : -1, i - cols, i + cols];
+      for (var k = 0; k < 4; k++) {
+        var m = nb[k];
+        if (m < 0 || m >= n || lv[m] >= l) continue;
+        lv[m] = l;
+        if (SEETHRU[w.ids[m]]) q.push(m);
+      }
+    }
+  }
+  function lightWorld() {
+    var w = world; if (!w) return;
+    var n = w.cols * w.rows, sky = new Uint8Array(n), blk = new Uint8Array(n), qs = [], qb = [], i;
+    for (var c = 0; c < w.cols; c++) for (var r = 0; r < w.hcol[c]; r++) {
+      i = r * w.cols + c; if (SEETHRU[w.ids[i]]) { sky[i] = 15; qs.push(i); }
+    }
+    for (i = 0; i < n; i++) {
+      if (w.ids[i] === TORCH) { blk[i] = 14; qb.push(i); } else if (w.ids[i] === LAVA) { blk[i] = 15; qb.push(i); }
+    }
+    spread(sky, qs); spread(blk, qb);
+    var bl = new Float32Array(n), DAY = FLAT ? 0.75 : 1;              // dusk daylight is dimmer
+    for (i = 0; i < n; i++) {
+      var depth = ((i / w.cols) | 0) - w.hcol[i % w.cols];
+      var L = Math.max(Math.pow(sky[i] / 15, 1.4) * DAY, Math.pow(blk[i] / 15, 1.4));
+      if (depth >= 0) L = Math.max(L, AMB + (DAY - AMB) * Math.exp(-depth / 2.2));   // daylight soaks a few blocks into the ground
+      if (w.ids[i] === TORCH || w.ids[i] === LAVA) L = 1;
+      bl[i] = L;
+    }
+    // Smooth lighting: every texel blends the light of the four nearest block centres.
+    var wc = w.wc, hc = w.hc, lm = new Float32Array(wc * hc);
+    for (var y = 0; y < hc; y++) {
+      var fy = (y - 7.5) / BS, r0 = Math.max(0, Math.floor(fy)), r1 = Math.min(w.rows - 1, r0 + 1), ty = Math.max(0, Math.min(1, fy - r0));
+      for (var x = 0; x < wc; x++) {
+        var fx = (x - 7.5) / BS, c0 = Math.max(0, Math.floor(fx)), c1 = Math.min(w.cols - 1, c0 + 1), tx = Math.max(0, Math.min(1, fx - c0));
+        var a = bl[r0 * w.cols + c0], b = bl[r0 * w.cols + c1], e = bl[r1 * w.cols + c0], d = bl[r1 * w.cols + c1];
+        var top = a + (b - a) * tx;
+        lm[y * wc + x] = top + (e + (d - e) * tx - top) * ty;
+      }
+    }
+    w.lmap = lm;
+  }
+  function setTorch(x, y) {   // page coordinates; only into an empty underground spot
+    var w = world, c = Math.floor(x / BPX), r = Math.floor((y - w.top) / BPX);
+    if (c < 0 || c >= w.cols || r < 0 || r >= w.rows || r <= w.hcol[c]) return false;
+    var i = r * w.cols + c;
+    if (w.ids[i] !== AIR) return false;
+    w.ids[i] = TORCH; return true;
+  }
+  function placeTorch(x, y) {
+    if (!world || !setTorch(x, y)) return;
+    placed.push({ x: x, y: y }); lightWorld(); kick();
+  }
+  if ('ResizeObserver' in window) {   // images and fonts change the page height: rebuild so bedrock stays at the bottom
+    var lastDocH = 0;
+    new ResizeObserver(function () {
+      var hgt = document.documentElement.scrollHeight;
+      if (Math.abs(hgt - lastDocH) < 4) return;
+      lastDocH = hgt; clearTimeout(buildWorld.t);
+      buildWorld.t = setTimeout(function () { try { buildWorld(); } catch (err) { world = null; } kick(); }, 150);
+    }).observe(document.body);
   }
 
   /* Lightning: 2-4 strikes at random times in the first 5 seconds, each a different jagged bolt with branches. */
@@ -321,14 +539,39 @@
     }
 
     clearText();
-    var j = 0, frontRow = Math.floor(front);
+    var j = 0, frontRow = Math.floor(front), sy2 = window.pageYOffset || 0, wd = world;
+    // the torch flickers a little
+    var flick = reduce ? 1 : 0.88 + 0.12 * vnoise(now * 0.006, 0.5, 5);
+    var tmx = W * 0.5, tmy = H * 0.55, TR = 75 * K, TR2 = TR * TR;   // phones: the torch rides in the middle of the screen
+    if (wd && !reduce && ((touchTorch && sy2 + innerHeight > wd.surf) ||
+        (mouse.x > -900 && mouse.y * CELL + sy2 > wd.surf))) busy = true;
     for (var y = 0; y < H; y++) {
       var by = (y & 7) * 8;
       if (y > frontRow) { for (var x0 = 0; x0 < W; x0++) px[j++] = 0; continue; }
       var band = frontRow - y < 6 * K && front < H + 30 ? 0.22 * (1 - (frontRow - y) / (6 * K)) : 0;
+      var wy = wd ? Math.floor((y * CELL + sy2 - wd.top) / CELL) : -1, inW = wy >= 0;
+      if (inW && wy >= wd.hc) { for (x0 = 0; x0 < W; x0++) px[j++] = 0; continue; }
+      var br = wy >> 4, tyy = (wy & 15) * 16, lrow = inW ? wy * wd.wc : 0;
       for (var x = 0; x < W; x++, j++) {
-        var v = field[j] + band;
-        var th = BAYER[by + (x & 7)], c = cloud[j];
+        var th = BAYER[by + (x & 7)];
+        if (inW && (x >> 4) < wd.cols) {
+          // a block of the world (or underground air); sky air above the ground falls through to the sky below
+          var bc = x >> 4, id = wd.ids[br * wd.cols + bc], underground = br >= wd.hcol[bc];
+          var k2 = tyy + (x & 15), T = id ? TEX[id] : null, tone = T ? T.tone[k2] : 0;
+          if (tone || underground) {
+            // Unlit underground is dark. In dark mode that is just the page background; in light mode it is drawn
+            // in a near-black (except right around text, which keeps a soft pocket of page colour so it stays readable).
+            if (!tone) { px[j] = CAVE && vis[j] * 0.94 > th ? CAVE : 0; continue; }
+            var L = wd.lmap[lrow + x] + (field[j] - base[j]) * 3.6 * flick;   // only the torch, not the sky density
+            if (touchTorch) {
+              var ddx = x - tmx, ddy = y - tmy, d2 = ddx * ddx + ddy * ddy;
+              if (d2 < TR2) { var q = 1 - d2 / TR2; L += 1.1 * q * q * flick; }
+            }
+            px[j] = tone * L * vis[j] > th ? T.col[k2] : (CAVE && vis[j] * 0.94 > th ? CAVE : 0);
+            continue;
+          }
+        }
+        var v = field[j] + band, c = cloud[j];
         if (c > th) {
           // inside a cloud: lit parts are white (light mode) or pale grey (dark mode); shadows dither in a darker tone
           // (th / c re-spreads the same dither threshold over just the cloud's cells, so the shading dithers cleanly)
@@ -345,7 +588,8 @@
   // Keep text readable: no dither under elements marked data-clear, with a soft edge around them.
   var clearEls = document.querySelectorAll('[data-clear]');
   function clearText() {
-    var PAD = 3 * K, FADE = 6 * K;
+    var PAD = 2 * K, FADE = 12 * K;   // a soft, round-cornered glow around text rather than a hard box
+    vis.fill(1);
     for (var c = 0; c < clearEls.length; c++) {
       var r = clearEls[c].getBoundingClientRect();
       if (r.bottom < 0 || r.top > innerHeight || !r.width) continue;
@@ -356,14 +600,14 @@
         var dy = y < tp ? tp - y : y > bt ? y - bt : 0;
         for (var x = x0; x <= x1; x++) {
           var dx = x < l ? l - x : x > rt ? x - rt : 0;
-          var d = Math.max(dx, dy);
-          if (d < FADE) { field[y * W + x] *= d / FADE; cloud[y * W + x] *= d / FADE; }
+          var d = Math.hypot(dx, dy);
+          if (d < FADE) { var f = d / FADE, jj = y * W + x; field[jj] *= f; cloud[jj] *= f; if (f < vis[jj]) vis[jj] = f; }
         }
       }
     }
   }
 
-  if (dark && dark.addEventListener) dark.addEventListener('change', function () { pickTheme(); kick(); });
+  if (dark && dark.addEventListener) dark.addEventListener('change', function () { pickTheme(); lightWorld(); kick(); });
 
   function kick() { if (!running) { running = true; requestAnimationFrame(frame); } }
 
@@ -382,6 +626,7 @@
   addEventListener('scroll', kick, { passive: true });
   // Text can move when fonts or images arrive; redraw so the clear areas follow it.
   addEventListener('load', kick);
+  document.addEventListener('transitionend', kick);   // text finished sliding in: move its clear area with it
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(kick);
 
   function ripple(el, ev) {
@@ -394,7 +639,9 @@
   }
   // A click anywhere ripples through the dither (keyboard "clicks" ripple from the element's centre).
   document.addEventListener('click', function (e) {
-    ripple(e.target.closest ? (e.target.closest('button, a, input') || document.body) : document.body, e);
+    var ui = e.target.closest ? e.target.closest('button, a, input, label, .step, .unlock, .foot p') : null;
+    ripple(ui || document.body, e);
+    if (!ui && (e.clientX || e.clientY)) placeTorch(e.clientX, e.clientY + (window.pageYOffset || 0));   // click a cave: place a torch
   });
 
   /* ------------------------------------------------------------ load reveal */
