@@ -812,7 +812,7 @@ metafile = true
 
 [[files]]
 file = "options.txt"
-hash = "62fc34bdde4b77029a291d37115f178d576d7b7791b8af37ab4573b773e9726a"
+hash = "543e02dd9d0f0c4baa57233c72daba84dee2b706dedece2608b1f9879915bf92"
 preserve = true
 
 [[files]]
@@ -878,11 +878,6 @@ metafile = true
 [[files]]
 file = "resourcepacks/repottery.pw.toml"
 hash = "ee245bba724c0fd81ad5819887d106ed11016eef006d1c544b41a75689317299"
-metafile = true
-
-[[files]]
-file = "resourcepacks/shrimps-immersive-interfaces.pw.toml"
-hash = "210e36b7821161895394e735445abf1fd784b044c0da5f807257f8bda59cd564"
 metafile = true
 
 [[files]]
