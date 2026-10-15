@@ -143,6 +143,16 @@ h1 {
 .step-wide { grid-template-columns: 1fr; }   /* a text-only card (no picture) */
 .shaders { padding-top: 0; }
 .shaders .step h3 { margin-top: 0; }
+/* Fast / Fancy picker: a plain grid, one row per system */
+.pick { width: 100%; border-collapse: collapse; margin: 6px 0 12px; table-layout: fixed; }
+.pick th, .pick td { border: 1px solid var(--line); padding: 12px 14px; text-align: left; vertical-align: top; }
+.pick thead th { font: 800 20px var(--sans); background: var(--cap-bg); }
+.pick thead th span { display: block; font: 400 13px var(--sans); color: var(--ink-2); margin-top: 2px; }
+.pick thead th:first-child { width: 22%; }
+.pick tbody th { font: 800 17px var(--sans); }
+.pick td { font: 700 17px var(--sans); }
+.pick td em { font-weight: 400; font-style: normal; color: var(--ink-2); font-size: 14px; }
+@media (max-width: 480px) { .pick th, .pick td { padding: 9px 8px; } .pick thead th { font-size: 17px; } .pick td, .pick tbody th { font-size: 15px; } }
 
 /* Footer */
 .foot { text-align: center; padding: 28px 0 150px; border-top: 1px solid var(--line); }   /* room for the bedrock floor */
