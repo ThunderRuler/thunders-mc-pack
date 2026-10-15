@@ -211,11 +211,6 @@ hash = "ba5f5ccfd31e25f9feb4730dfc01ef7bee4156b3336453cbe797ffb0c51ab46f"
 preserve = true
 
 [[files]]
-file = "config/modpack_defaults/config/rrls.toml"
-hash = "6b44bfd3fc7ee9d8f589425503e2af2748aa274d080f6d270d34cbc1b5604d45"
-preserve = true
-
-[[files]]
 file = "config/modpack_defaults/debug-profile.json"
 hash = "902b29e5f2044fa0011ac76281c700b52d83f1b5db6b605b8f702c8a99a55a2b"
 preserve = true
@@ -452,7 +447,7 @@ metafile = true
 
 [[files]]
 file = "mods/fortunate-ancient-debris.pw.toml"
-hash = "b586e229075db0246c4d197b4d61a20fcea066a6f18e45f4e272fb4d883ff122"
+hash = "27435f2d2622671f9a3cc0b5c67e704766cc24c5a2b337e83adb5ad6c4c8474d"
 metafile = true
 
 [[files]]
@@ -648,11 +643,6 @@ metafile = true
 [[files]]
 file = "mods/renice-shot.pw.toml"
 hash = "f999114671c132b68324e70d75bb60051f4e4d7433b01ce87b4b06b8ed934a96"
-metafile = true
-
-[[files]]
-file = "mods/rrls.pw.toml"
-hash = "9aff010771d11ec9fe4980ff0d746cbca61854fc638daeef73c057f4fafb39bf"
 metafile = true
 
 [[files]]
