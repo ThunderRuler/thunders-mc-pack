@@ -151,6 +151,7 @@ h1 {
 .pick thead th:first-child { width: 22%; }
 .pick tbody th { font: 800 17px var(--sans); }
 .pick td { font: 700 17px var(--sans); }
+.pick .rec { display: inline-block; margin-left: 6px; padding: 2px 7px; font: 700 12px var(--sans); background: var(--ink); color: var(--on-ink); vertical-align: 2px; }
 .pick td em { font-weight: 400; font-style: normal; color: var(--ink-2); font-size: 14px; }
 @media (max-width: 480px) { .pick th, .pick td { padding: 9px 8px; } .pick thead th { font-size: 17px; } .pick td, .pick tbody th { font-size: 15px; } }
 
