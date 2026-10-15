@@ -66,15 +66,19 @@
   var SKY_MAX = 0.42, SKY_REACH = 0.78;           // sky: dot density at the top, and how far down (fraction of the window) it fades out
   var cv = document.getElementById('dither');
   var ctx = cv.getContext('2d');
-  var W = 0, H = 0, noise, base, field, img, px, rowCol, vis;   // vis: 1, or less near text   // rowCol: the sky dot colour for each row
-  var mouse = { x: -999, y: -999 };
-  var trail = [];                                 // recent pointer positions; each fades out over TRAIL_MS
+  // The canvas is part of the page (it scrolls with it, so the picture is locked to the page). Each frame draws only a
+  // window of it: the visible part plus half a screen above and below, so a quick scroll never shows an undrawn edge.
+  // W x H = that window in cells; WY = page position (CSS px) of its top row; VH = screen height in cells; M = margin rows.
+  // rowCol: the sky dot colour for each row. vis: 1, or less near text.
+  var W = 0, H = 0, VH = 0, M = 0, WY = 0, PR = 0, noise, base, field, img, px, rowCol, vis;
+  var mouse = { x: -999, y: -999, cx: -999, cy: -999 };   // cx, cy: last pointer position on screen (CSS px)
+  var trail = [];                                 // recent pointer positions (x in cells, py = page px); each fades out over TRAIL_MS
   var TRAIL_MS = 1100, TRAIL_R = 40 * K;
   var ripples = [];
   var bolts = [];                                 // lightning strikes for this page load (random every time)
   var t0 = performance.now();
   var demo = /^#demo/.test(location.hash);
-  var front = (reduce || demo) ? 1e9 : -10;       // load wave position, in cells
+  var front = (reduce || demo) ? 1e9 : -10;       // load wave position, in cells from the top of the screen
   var WAVE_MS = 1700, STORM_MS = 5000;
   var running = false;
   // Small clouds drifting left to right through the sky; cloud = coverage per cell.
@@ -82,13 +86,28 @@
   // shade = how deep in a cloud's shadow each cell is.
   var clouds = [], cloud, shade, boltOn;
 
+  function pageHeight() {   // the page's own height (measured from the content, so the canvas never props it up)
+    var m = document.querySelector('main');
+    return Math.max(innerHeight, m ? m.getBoundingClientRect().bottom + (window.pageYOffset || 0) : innerHeight);
+  }
+  function sizeCanvas() {
+    PR = Math.ceil(pageHeight() / CELL) + 1;
+    if (cv.width !== W || cv.height !== PR) {
+      cv.width = W; cv.height = PR;
+      cv.style.width = W * CELL + 'px'; cv.style.height = PR * CELL + 'px';
+      return true;
+    }
+    return false;
+  }
+
   function resize() {
-    W = Math.max(1, Math.ceil((innerWidth || document.documentElement.clientWidth || 1) / CELL));
-    H = Math.max(1, Math.ceil((innerHeight || document.documentElement.clientHeight || 1) / CELL));
-    cv.width = W; cv.height = H;
+    W = Math.max(1, Math.ceil((document.documentElement.clientWidth || innerWidth || 1) / CELL));
+    VH = Math.max(1, Math.ceil((innerHeight || document.documentElement.clientHeight || 1) / CELL));
+    M = Math.ceil(VH / 2); H = VH + 2 * M;
+    sizeCanvas();
     img = ctx.createImageData(W, H); px = new Uint32Array(img.data.buffer); rowCol = new Uint32Array(H); vis = new Float32Array(W * H);
-    noise = new Float32Array(W * H); cloud = new Float32Array(W * H); shade = new Float32Array(W * H); boltOn = new Uint8Array(W * H); base = new Float32Array(W * H); field = new Float32Array(W * H);
-    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
+    noise = new Float32Array(W * PR); cloud = new Float32Array(W * H); shade = new Float32Array(W * H); boltOn = new Uint8Array(W * H); base = new Float32Array(W * H); field = new Float32Array(W * H);
+    for (var y = 0; y < PR; y++) for (var x = 0; x < W; x++) {   // tied to the page, not the screen
       // Faint large-scale haze so the sky isn't a perfectly flat gradient, plus a little per-dot jitter that hides
       // the contour lines an ordered dither draws where a smooth gradient crosses from one pattern to the next.
       // (two broad layers at an angle: finer noise layers line up with the screen and show as a plaid pattern)
@@ -104,7 +123,7 @@
 
   // Sky: densest at the top of the page, thinning out smoothly until it is plain background. Tied to the page, so it scrolls away.
   function computeBase() {
-    var reach = world ? world.surf : innerHeight * SKY_REACH, sy = window.pageYOffset || 0;
+    var reach = world ? world.surf : innerHeight * SKY_REACH, sy = WY, r0 = WY / CELL;
     for (var y = 0; y < H; y++) {
       var t = 1 - (y * CELL + sy) / reach, row = y * W;
       rowCol[y] = skyColour(1 - t);
@@ -113,7 +132,8 @@
       // Day: thins out steadily. Dusk: stays fuller lower down, so the warm glow near the horizon shows.
       var prof = FLAT ? SKY_MAX * (0.55 * Math.pow(t, 1.2) + 0.45 * smooth(0, 0.55, t)) : SKY_MAX * Math.pow(t, 1.35);
       if (world) prof = FLAT ? SKY_MAX * (0.5 + 0.5 * Math.pow(t, 1.2)) : SKY_MAX * (0.22 + 0.78 * Math.pow(t, 1.35));
-      for (var x = 0; x < W; x++) base[row + x] = prof * (0.8 + 0.4 * noise[row + x]);
+      var nrow = Math.max(0, Math.min(PR - 1, r0 + y)) * W;
+      for (var x = 0; x < W; x++) base[row + x] = prof * (0.8 + 0.4 * noise[nrow + x]);
     }
   }
 
@@ -177,7 +197,7 @@
   }
   function drawClouds(t) {
     cloud.fill(0); shade.fill(0);
-    var span = innerWidth + 400, sy = window.pageYOffset || 0, moving = !reduce;
+    var span = innerWidth + 400, sy = WY, moving = !reduce;
     for (var i = 0; i < clouds.length; i++) {
       var c = clouds[i], s = c.sprite;
       var ox = Math.round(((((c.x + (moving ? c.v * t / 1000 : 0)) % span) + span) % span - 200 - s.dx) / CELL);
@@ -273,7 +293,7 @@
     // The ground starts just under the "Four steps" heading, so the heading stands in the sky on the horizon.
     var sy = window.pageYOffset || 0, mark = document.querySelector('.steps h2') || document.querySelector('.hero');
     var surf = mark ? mark.getBoundingClientRect().bottom + sy + 10 : innerHeight;
-    var docH = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, innerHeight);
+    var docH = pageHeight();
     var cols = Math.ceil(innerWidth / BPX) + 1, sr = 8, top = surf - sr * BPX, rows = Math.ceil((docH - top) / BPX);
     if (rows < sr + 24) { world = null; return; }
     var S = worldSeed, ids = new Uint8Array(cols * rows), hcol = new Int16Array(cols), under = rows - sr;
@@ -355,7 +375,7 @@
         if (byp < 0 || byp > innerHeight || blockAt(bxp, byp + sy) < 0) continue;
         var cnt = caveLight(bi).idx.length; if (cnt > bestN) { bestN = cnt; best = bi; }
       }
-      if (best >= 0) { mouse.x = ((best % cols) * BPX + BPX / 2) / CELL; mouse.y = (top + ((best / cols) | 0) * BPX + BPX / 2 - sy) / CELL; }
+      if (best >= 0) { mouse.cx = (best % cols) * BPX + BPX / 2; mouse.cy = top + ((best / cols) | 0) * BPX + BPX / 2 - sy; }
     }
   }
 
@@ -429,8 +449,8 @@
   var glows = [], lastNow = 0;   // caverns lit by the mouse: each fades in while the mouse is inside, then fades out
   function updateGlows(now, sy, flick) {
     var w = world, dt = Math.min(100, now - (lastNow || now)); lastNow = now;
-    var hx = touchTorch ? innerWidth * 0.5 : mouse.x * CELL, hy = touchTorch ? innerHeight * 0.55 : mouse.y * CELL;
-    var hov = (touchTorch || mouse.x > -900) ? blockAt(hx, hy + sy) : -1, found = false;
+    var hx = touchTorch ? innerWidth * 0.5 : mouse.cx, hy = touchTorch ? innerHeight * 0.55 : mouse.cy;
+    var hov = (touchTorch || mouse.cx > -900) ? blockAt(hx, hy + sy) : -1, found = false;
     for (var g = 0; g < glows.length; g++) if (glows[g].i === hov) found = true;
     if (hov >= 0 && !found) glows.push({ i: hov, a: 0 });
     var lit = w.lit; lit.set(w.base);
@@ -457,10 +477,10 @@
   if ('ResizeObserver' in window) {   // images and fonts change the page height: rebuild so bedrock stays at the bottom
     var lastDocH = 0;
     new ResizeObserver(function () {
-      var hgt = document.documentElement.scrollHeight;
+      var hgt = pageHeight();
       if (Math.abs(hgt - lastDocH) < 4) return;
       lastDocH = hgt; clearTimeout(buildWorld.t);
-      buildWorld.t = setTimeout(function () { try { buildWorld(); } catch (err) { world = null; } kick(); }, 150);
+      buildWorld.t = setTimeout(function () { try { resize(); } catch (err) { world = null; } kick(); }, 150);
     }).observe(document.body);
   }
 
@@ -482,7 +502,7 @@
     var seed = b.seed;
     function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
     var out = [], acc = new Float32Array(W * H);
-    var x = W * b.x, y = -2, pts = [[x, y]], bottom = H * rand(0.55, 0.95);
+    var x = W * b.x, y = M - 2, pts = [[x, y]], bottom = M + VH * rand(0.55, 0.95);
     while (y < bottom) { y += (5 + rnd() * 10) * K; x += (rnd() - 0.5) * 24 * K; pts.push([x, y]); }
     var paths = [pts];
     for (var br = 0; br < 2 + Math.floor(rnd() * 2); br++) {
@@ -552,17 +572,21 @@
 
   var strikeNow = 0;
   function frame(now) {
-    var t = now - t0, busy = false;
+    var t = now - t0, busy = false, sy = window.pageYOffset || 0;
+    WY = (Math.floor(sy / CELL) - M) * CELL;
+    var off = (sy - WY) / CELL;                     // screen top, in window rows
+    if (mouse.cx > -900) { mouse.x = mouse.cx / CELL; mouse.y = (mouse.cy + sy - WY) / CELL; } else mouse.x = mouse.y = -999;
     computeBase();
     drawClouds(t);
     field.set(base);
     if (clouds.length && !reduce) busy = true;
 
     // Load wave: rows above the front are drawn, a brighter band rides on the front.
-    if (front < H + 30) {
+    if (front < VH + 30) {
       var e = Math.min(1, t / WAVE_MS); e = 1 - Math.pow(1 - e, 3);
-      front = -10 + e * (H + 40); busy = true;
+      front = -10 + e * (VH + 40); busy = true;
       revealUpTo(front * CELL);
+      if (e >= 1) front = 1e9;
     }
     // Lightning.
     strikeNow = 0; boltOn.fill(0);
@@ -584,7 +608,7 @@
       var ma = (now - trail[mi].t) / TRAIL_MS;
       if (ma >= 1) { trail.splice(mi, 1); continue; }
       var life = 1 - ma;
-      addBlob(trail[mi].x, trail[mi].y, TRAIL_R * (0.45 + 0.55 * life), 0.30 * life * life, false, 0, true);
+      addBlob(trail[mi].x, (trail[mi].py - WY) / CELL, TRAIL_R * (0.45 + 0.55 * life), 0.30 * life * life, false, 0, true);
       busy = true;
     }
     if (mouse.x > -900) addBlob(mouse.x, mouse.y, TRAIL_R, 0.30, false, 0, true);
@@ -592,19 +616,19 @@
     for (var i = ripples.length - 1; i >= 0; i--) {
       var rp = ripples[i], age = (now - rp.t) / 900;
       if (age >= 1) { ripples.splice(i, 1); continue; }
-      addBlob(rp.x, rp.y, 6 * K + age * rp.max, 0.55 * (1 - age), true, (3 + age * 4) * K);
+      addBlob(rp.x, (rp.py - WY) / CELL, 6 * K + age * rp.max, 0.55 * (1 - age), true, (3 + age * 4) * K);
       busy = true;
     }
 
     clearText();
-    var j = 0, frontRow = Math.floor(front), sy2 = window.pageYOffset || 0, wd = world;
+    var j = 0, frontRow = Math.floor(front + off), sy2 = WY, wd = world;
     // the torch flickers a little
     var flick = reduce ? 1 : 0.88 + 0.12 * vnoise(now * 0.006, 0.5, 5);
-    if (wd && wd.base && updateGlows(now, sy2, flick)) busy = true;
+    if (wd && wd.base && updateGlows(now, sy, flick)) busy = true;
     for (var y = 0; y < H; y++) {
       var by = (y & 7) * 8;
       if (y > frontRow) { for (var x0 = 0; x0 < W; x0++) px[j++] = 0; continue; }
-      var band = frontRow - y < 6 * K && front < H + 30 ? 0.22 * (1 - (frontRow - y) / (6 * K)) : 0;
+      var band = frontRow - y < 6 * K && front < VH + 30 ? 0.22 * (1 - (frontRow - y) / (6 * K)) : 0;
       var wy = wd ? Math.floor((y * CELL + sy2 - wd.top) / CELL) : -1, inW = wy >= 0;
       if (inW && wy >= wd.hc) { for (x0 = 0; x0 < W; x0++) px[j++] = 0; continue; }
       var br = wy >> 4, tyy = (wy & 15) * 16, ro0 = 0, ro1 = 0, ty = 0;
@@ -638,8 +662,8 @@
         } else px[j] = v > th ? (boltOn[j] ? BOLT : rowCol[y]) : 0;
       }
     }
-    ctx.putImageData(img, 0, 0);
-    if (trail.length || ripples.length || front < H + 30 || strikeNow > 0) requestAnimationFrame(frame);
+    ctx.putImageData(img, 0, WY / CELL);
+    if (trail.length || ripples.length || front < VH + 30 || strikeNow > 0) requestAnimationFrame(frame);
     else if (busy) setTimeout(function () { requestAnimationFrame(frame); }, 50);   // only clouds moving: 20 fps is plenty
     else running = false;
   }
@@ -651,8 +675,9 @@
     vis.fill(1);
     for (var c = 0; c < clearEls.length; c++) {
       var r = clearEls[c].getBoundingClientRect();
-      if (r.bottom < 0 || r.top > innerHeight || !r.width) continue;
-      var l = r.left / CELL - PAD, rt = r.right / CELL + PAD, tp = r.top / CELL - PAD, bt = r.bottom / CELL + PAD;
+      var dyw = (window.pageYOffset || 0) - WY;      // screen -> window offset, CSS px
+      if (r.bottom + dyw < 0 || r.top + dyw > H * CELL || !r.width) continue;
+      var l = r.left / CELL - PAD, rt = r.right / CELL + PAD, tp = (r.top + dyw) / CELL - PAD, bt = (r.bottom + dyw) / CELL + PAD;
       var x0 = Math.max(0, Math.floor(l - FADE)), x1 = Math.min(W - 1, Math.ceil(rt + FADE));
       var y0 = Math.max(0, Math.floor(tp - FADE)), y1 = Math.min(H - 1, Math.ceil(bt + FADE));
       for (var y = y0; y <= y1; y++) {
@@ -673,15 +698,16 @@
   addEventListener('resize', function () { clearTimeout(resize.t); resize.t = setTimeout(resize, 120); });
   addEventListener('pointermove', function (e) {
     if (reduce) return;
-    mouse.x = e.clientX / CELL; mouse.y = e.clientY / CELL;
+    mouse.cx = e.clientX; mouse.cy = e.clientY;
+    var x = e.clientX / CELL, py = e.clientY + (window.pageYOffset || 0);
     var last = trail[trail.length - 1], now = performance.now();
-    if (!last || Math.hypot(mouse.x - last.x, mouse.y - last.y) > 5 * K || now - last.t > 60) {
-      trail.push({ x: mouse.x, y: mouse.y, t: now });
+    if (!last || Math.hypot(x - last.x, (py - last.py) / CELL) > 5 * K || now - last.t > 60) {
+      trail.push({ x: x, py: py, t: now });
       if (trail.length > 48) trail.shift();
     }
     kick();
   }, { passive: true });
-  document.addEventListener('pointerleave', function () { mouse.x = mouse.y = -999; kick(); });
+  document.addEventListener('pointerleave', function () { mouse.cx = mouse.cy = -999; kick(); });
   addEventListener('scroll', kick, { passive: true });
   // Text can move when fonts or images arrive; redraw so the clear areas follow it.
   addEventListener('load', kick);
@@ -693,7 +719,7 @@
     var x, y;
     if (ev && (ev.clientX || ev.clientY)) { x = ev.clientX; y = ev.clientY; }
     else { var r = el.getBoundingClientRect(); x = r.left + r.width / 2; y = r.top + r.height / 2; }
-    ripples.push({ x: x / CELL, y: y / CELL, t: performance.now(), max: Math.max(W, H) * 0.45 });
+    ripples.push({ x: x / CELL, py: y + (window.pageYOffset || 0), t: performance.now(), max: Math.max(W, VH) * 0.45 });
     kick();
   }
   // A click anywhere ripples through the dither (keyboard "clicks" ripple from the element's centre).

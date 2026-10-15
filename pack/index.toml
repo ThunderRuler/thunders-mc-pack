@@ -896,6 +896,15 @@ hash = "170e55823214df867005d37844b515c0a7cc6b3393386db5ac99ad4776ef6e29"
 metafile = true
 
 [[files]]
+file = "shaderpacks/MakeUp-UltraFast-9.5g-Synced.zip"
+hash = "52ea7b0c1e8938157d3b2539c600e38b6fc2195a2457a70749424779030b5b18"
+
+[[files]]
+file = "shaderpacks/MakeUp-UltraFast-9.5g-Synced.zip.txt"
+hash = "580c5f0e9076d0541f0102d4b0862b1a0d3021066f0232bfa920b7647f7ffc42"
+preserve = true
+
+[[files]]
 file = "shaderpacks/photon-shader.pw.toml"
 hash = "e9112a2da03f65451c8c949331d71b92546bbd75ff78eac554d27f6c41e1ba29"
 metafile = true
