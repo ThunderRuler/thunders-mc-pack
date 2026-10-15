@@ -13,7 +13,9 @@
   var cv = document.getElementById('dither');
   var ctx = cv.getContext('2d');
   var W = 0, H = 0, base, field, boltMask, img, px;
-  var mouse = { x: -999, y: -999, tx: -999, ty: -999, amp: 0, moved: 0 };
+  var mouse = { x: -999, y: -999 };
+  var trail = [];                                 // recent pointer positions; each fades out over TRAIL_MS
+  var TRAIL_MS = 1100, TRAIL_R = 40;
   var ripples = [];
   var flash = 0, t0 = performance.now();
   var front = reduce ? 1e9 : -10;                 // load wave position, in cells
@@ -28,12 +30,12 @@
     base = new Float32Array(W * H); field = new Float32Array(W * H);
     var cx = W / 2, cy = H * 0.42;
     for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
-      // Soft rolling bands of denser and lighter dither, lighter in the middle where the content sits.
+      // Mostly white: faint rolling bands of dither that only show toward the edges of the screen.
       var p = Math.sin(x * 0.045 + Math.sin(y * 0.03) * 2.2) * Math.cos(y * 0.038 - x * 0.012) * 0.5 + 0.5;
       var q = Math.sin((x + y) * 0.021) * 0.5 + 0.5;
       var dx = (x - cx) / W, dy = (y - cy) / H;
-      var edge = Math.min(1, Math.sqrt(dx * dx * 1.6 + dy * dy) * 1.9);
-      base[y * W + x] = 0.03 + (0.10 + 0.20 * edge) * (0.55 * p + 0.45 * q * q);
+      var edge = Math.max(0, Math.min(1, Math.sqrt(dx * dx * 1.6 + dy * dy) * 2.0) - 0.35) / 0.65;
+      base[y * W + x] = edge * edge * 0.17 * (0.55 * p + 0.45 * q * q);
     }
     makeBolt();
     kick();
@@ -69,15 +71,18 @@
     for (var j = 0; j < acc.length; j++) if (acc[j] > 0.01) boltMask.push(j, acc[j]);
   }
 
-  function addBlob(cx, cy, r, amp, ring, width) {
-    var R = ring ? r + width * 3 : r * 2.2;
+  // ring: an expanding ring (click ripple), added on top. Otherwise a soft round patch; with peak=true
+  // overlapping patches don't stack (the strongest wins), so the mouse trail stays light.
+  function addBlob(cx, cy, r, amp, ring, width, peak) {
+    var R = ring ? r + width * 3 : r;
     var x0 = Math.max(0, Math.floor(cx - R)), x1 = Math.min(W - 1, Math.ceil(cx + R));
     var y0 = Math.max(0, Math.floor(cy - R)), y1 = Math.min(H - 1, Math.ceil(cy + R));
     for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) {
       var d = Math.hypot(x - cx, y - cy), v;
       if (ring) { var k = (d - r) / width; v = amp * Math.exp(-k * k); }
-      else v = amp * Math.exp(-(d * d) / (r * r));
-      field[y * W + x] += v;
+      else { if (d >= r) continue; var f = 1 - (d * d) / (r * r); v = amp * f * f; }
+      var j = y * W + x;
+      if (peak) { if (base[j] + v > field[j]) field[j] = base[j] + v; } else field[j] += v;
     }
   }
 
@@ -99,14 +104,15 @@
     } else flash = 0;
     if (flash > 0) for (var b = 0; b < boltMask.length; b += 2) field[boltMask[b]] += boltMask[b + 1] * flash;
 
-    // Mouse: dither thickens around the pointer, eases back when it stops.
-    if (mouse.tx > -900) {
-      mouse.x += (mouse.tx - mouse.x) * 0.25; mouse.y += (mouse.ty - mouse.y) * 0.25;
-      var target = now - mouse.moved < 140 ? 1 : 0.35;
-      mouse.amp += (target - mouse.amp) * 0.08;
-      addBlob(mouse.x, mouse.y, 20, 0.26 * mouse.amp, false);
-      if (Math.abs(target - mouse.amp) > 0.01 || Math.abs(mouse.tx - mouse.x) > 0.3 || Math.abs(mouse.ty - mouse.y) > 0.3) busy = true;
+    // Mouse: every recent pointer position leaves a soft patch of dither that shrinks and fades, so moving leaves a trail.
+    for (var m = trail.length - 1; m >= 0; m--) {
+      var ma = (now - trail[m].t) / TRAIL_MS;
+      if (ma >= 1) { trail.splice(m, 1); continue; }
+      var life = 1 - ma;
+      addBlob(trail[m].x, trail[m].y, TRAIL_R * (0.45 + 0.55 * life), 0.30 * life * life, false, 0, true);
+      busy = true;
     }
+    if (mouse.x > -900) addBlob(mouse.x, mouse.y, TRAIL_R, 0.30, false, 0, true);
     // Click ripples.
     for (var i = ripples.length - 1; i >= 0; i--) {
       var rp = ripples[i], age = (now - rp.t) / 900;
@@ -115,6 +121,7 @@
       busy = true;
     }
 
+    clearText();
     var j = 0, frontRow = Math.floor(front);
     for (var y = 0; y < H; y++) {
       var by = (y & 3) * 4;
@@ -129,16 +136,45 @@
     if (busy) requestAnimationFrame(frame); else running = false;
   }
 
+  // Keep text readable: no dither under elements marked data-clear, with a soft edge around them.
+  var clearEls = document.querySelectorAll('[data-clear]');
+  function clearText() {
+    var PAD = 3, FADE = 6;
+    for (var c = 0; c < clearEls.length; c++) {
+      var r = clearEls[c].getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight || !r.width) continue;
+      var l = r.left / CELL - PAD, rt = r.right / CELL + PAD, tp = r.top / CELL - PAD, bt = r.bottom / CELL + PAD;
+      var x0 = Math.max(0, Math.floor(l - FADE)), x1 = Math.min(W - 1, Math.ceil(rt + FADE));
+      var y0 = Math.max(0, Math.floor(tp - FADE)), y1 = Math.min(H - 1, Math.ceil(bt + FADE));
+      for (var y = y0; y <= y1; y++) {
+        var dy = y < tp ? tp - y : y > bt ? y - bt : 0;
+        for (var x = x0; x <= x1; x++) {
+          var dx = x < l ? l - x : x > rt ? x - rt : 0;
+          var d = Math.max(dx, dy);
+          if (d < FADE) field[y * W + x] *= d / FADE;
+        }
+      }
+    }
+  }
+
   function kick() { if (!running) { running = true; requestAnimationFrame(frame); } }
 
   addEventListener('resize', function () { clearTimeout(resize.t); resize.t = setTimeout(resize, 120); });
   addEventListener('pointermove', function (e) {
     if (reduce) return;
-    mouse.tx = e.clientX / CELL; mouse.ty = e.clientY / CELL; mouse.moved = performance.now();
-    if (mouse.x < -900) { mouse.x = mouse.tx; mouse.y = mouse.ty; }
+    mouse.x = e.clientX / CELL; mouse.y = e.clientY / CELL;
+    var last = trail[trail.length - 1], now = performance.now();
+    if (!last || Math.hypot(mouse.x - last.x, mouse.y - last.y) > 5 || now - last.t > 60) {
+      trail.push({ x: mouse.x, y: mouse.y, t: now });
+      if (trail.length > 48) trail.shift();
+    }
     kick();
   }, { passive: true });
-  document.addEventListener('pointerleave', function () { mouse.tx = mouse.ty = -999; mouse.x = mouse.y = -999; kick(); });
+  document.addEventListener('pointerleave', function () { mouse.x = mouse.y = -999; kick(); });
+  addEventListener('scroll', kick, { passive: true });
+  // Text moves when the pixel font arrives; redraw so the clear areas follow it.
+  addEventListener('load', kick);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(kick);
 
   function ripple(el, ev) {
     if (reduce) return;

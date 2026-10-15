@@ -17,21 +17,23 @@
 
 <main>
   <header class="hero">
-    <p class="kicker" data-reveal>Minecraft 26.3 &middot; Fabric &middot; friends only</p>
+    <p class="kicker" data-reveal data-clear>Minecraft 26.3 &middot; Fabric &middot; friends only</p>
     <h1 data-reveal>ThundersMC Pack</h1>
-    <p class="sub" data-reveal>One download sets everything up. It updates itself every time you press Play.</p>
+    <p class="sub" data-reveal data-clear>One download sets everything up. It updates itself every time you press Play.</p>
 
-    <a class="btn btn-prism" data-reveal data-ripple href="https://prismlauncher.org/download/" target="_blank" rel="noopener">
+    <div class="actions" data-reveal>
+    <a class="btn btn-prism" data-ripple href="https://prismlauncher.org/download/" target="_blank" rel="noopener">
       <span class="btn-no">1</span> Get Prism Launcher
     </a>
 
-    <div class="platforms" data-reveal>
+    <div class="platforms">
       <button class="btn btn-mac" type="button" data-platform="mac" data-ripple>
         <span class="btn-no">2</span> macOS
       </button>
       <button class="btn btn-win" type="button" data-platform="windows" data-ripple>
         <span class="btn-no">2</span> Windows
       </button>
+    </div>
     </div>
 
     <form class="unlock" id="unlock" hidden autocomplete="on">
@@ -42,11 +44,11 @@
       </div>
       <p class="unlock-msg" id="unlock-msg" role="status" aria-live="polite"></p>
     </form>
-    <p class="fineprint" data-reveal>macOS: Apple Silicon (M1 or newer). Windows: also works on Linux. Ask Thunder for the password.</p>
+    <p class="fineprint" data-reveal data-clear>macOS: Apple Silicon (M1 or newer). Windows: also works on Linux. Ask Thunder for the password.</p>
   </header>
 
   <section class="steps" aria-labelledby="steps-title">
-    <h2 id="steps-title" data-reveal>Four steps</h2>
+    <h2 id="steps-title" data-reveal data-clear>Four steps</h2>
     <ol>
       <li class="step" data-reveal>
         <div class="step-text">
@@ -86,8 +88,8 @@
   </section>
 
   <footer class="foot" data-reveal>
-    <p class="online" id="online"><span class="dot" aria-hidden="true"></span><span id="online-text">Unlock a download to see who's online</span></p>
-    <p class="legal">The pack includes a modified build of InertiaAntiCheat (GPL-3.0). Ask Thunder for its source code.</p>
+    <p class="online" id="online" data-clear><span class="dot" aria-hidden="true"></span><span id="online-text">Unlock a download to see who's online</span></p>
+    <p class="legal" data-clear>The pack includes a modified build of InertiaAntiCheat (GPL-3.0). Ask Thunder for its source code.</p>
   </footer>
 </main>
 
