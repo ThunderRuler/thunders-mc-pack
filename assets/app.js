@@ -761,7 +761,13 @@
   var form = document.getElementById('unlock'), pw = document.getElementById('pw');
   var label = document.getElementById('pw-label'), msg = document.getElementById('unlock-msg');
   var NAMES = { mac: 'macOS', windows: 'Windows' };
-  var platform = null, key = null, address = null, meta = null;
+  var platform = null, key = null, address = null, meta = null, openPw = null;
+  // Open mode: when dl/meta.json carries "open" (the password itself), the buttons download without asking.
+  // Remove the field (or rebuild dl/ with build_site.py) to ask for the password again.
+  fetch('dl/meta.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (m) {
+    meta = m; openPw = m.open || null;
+    if (openPw) document.querySelectorAll('.pw-only').forEach(function (el) { el.hidden = true; });
+  }).catch(function () {});
 
   function say(text, cls) { msg.textContent = text; msg.className = 'unlock-msg' + (cls ? ' ' + cls : ''); }
 
@@ -771,6 +777,11 @@
       document.querySelectorAll('[data-platform]').forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
       if (key) { download(); return; }
       form.hidden = false; form.setAttribute('data-platform', platform);
+      if (openPw) {                                  // open mode: no password needed, download straight away
+        label.textContent = NAMES[platform] + ' download';
+        document.querySelector('.unlock-row').hidden = true;
+        pw.value = openPw; unlock(); return;
+      }
       label.textContent = 'Password for the ' + NAMES[platform] + ' download';
       say('');
       pw.focus();
@@ -802,8 +813,8 @@
     return crypto.subtle.decrypt({ name: 'AES-GCM', iv: u.slice(0, 12) }, key, u.slice(12));
   }
 
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
+  form.addEventListener('submit', function (e) { e.preventDefault(); unlock(); });
+  function unlock() {
     if (!window.crypto || !crypto.subtle) { say('This browser can\'t unlock the download. Try Chrome, Edge, Safari or Firefox.', 'err'); return; }
     say('Unlocking...');
     (meta ? Promise.resolve(meta) : fetch('dl/meta.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }))
@@ -828,7 +839,7 @@
         say(err && err.name === 'OperationError' ? 'Wrong password. Ask Thunder for it.' : 'Couldn\'t unlock: ' + (err && err.message || err), 'err');
         ripple(form);
       });
-  });
+  }
 
   function download() {
     var info = meta.files[platform];
