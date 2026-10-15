@@ -8,12 +8,13 @@
   /* ------------------------------------------------------------------ dither */
   var CELL = 3;                                   // CSS pixels per dither cell
   var BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(function (v) { return (v + 0.5) / 16; });
-  // Dot colours (little-endian ABGR). Light mode: pale grey dots on white. Dark mode: dim stars on near-black.
-  var LIGHT = { dot: 0xFFCBCECE, bolt: 0xFFCDA08C };   // #cecece, #8ca0cd
-  var DARK = { dot: 0xFF4A4642, bolt: 0xFFFFC08F };    // #42464a, #8fc0ff
+  // Dot colours (little-endian ABGR). Light mode: soft blue sky dots on white; clouds are white gaps in the sky.
+  // Dark mode: deep blue sky dots on near-black; clouds are pale grey dots. Lightning stays as gentle as in light mode.
+  var LIGHT = { dot: 0xFFEDD0B4, bolt: 0xFFCDA08C, cloud: 0, flash: 0.6 };            // sky #b4d0ed, bolt #8ca0cd
+  var DARK = { dot: 0xFF5A3A24, bolt: 0xFF9A7458, cloud: 0xFF9C958F, flash: 0.25 };  // sky #243a5a, bolt #58749a, cloud #8f959c
   var dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)');
-  var DOT = LIGHT.dot, BOLT = LIGHT.bolt;
-  function pickTheme() { var c = dark && dark.matches ? DARK : LIGHT; DOT = c.dot; BOLT = c.bolt; }
+  var DOT, BOLT, CLOUD, FLASH;
+  function pickTheme() { var c = dark && dark.matches ? DARK : LIGHT; DOT = c.dot; BOLT = c.bolt; CLOUD = c.cloud; FLASH = c.flash; }
   pickTheme();
   var SKY_MAX = 0.42, SKY_REACH = 0.78;           // night sky: dot density at the top, and how far down (fraction of the window) it fades to white
   var cv = document.getElementById('dither');
@@ -29,13 +30,16 @@
   var front = (reduce || demo) ? 1e9 : -10;       // load wave position, in cells
   var WAVE_MS = 1700, STORM_MS = 5000;
   var running = false;
+  // Small clouds drifting left to right through the sky; cloud = coverage per cell.
+  // boltOn = cells the bolt itself covers this frame (only they get the lightning colour).
+  var clouds = [], cloud, boltOn;
 
   function resize() {
     W = Math.max(1, Math.ceil((innerWidth || document.documentElement.clientWidth || 1) / CELL));
     H = Math.max(1, Math.ceil((innerHeight || document.documentElement.clientHeight || 1) / CELL));
     cv.width = W; cv.height = H;
     img = ctx.createImageData(W, H); px = new Uint32Array(img.data.buffer);
-    noise = new Float32Array(W * H); base = new Float32Array(W * H); field = new Float32Array(W * H);
+    noise = new Float32Array(W * H); cloud = new Float32Array(W * H); boltOn = new Uint8Array(W * H); base = new Float32Array(W * H); field = new Float32Array(W * H);
     for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
       // Slow clumps, so the star-field looks like cloud cover and not a flat gradient.
       var p = Math.sin(x * 0.045 + Math.sin(y * 0.03) * 2.2) * Math.cos(y * 0.038 - x * 0.012) * 0.5 + 0.5;
@@ -43,6 +47,7 @@
       noise[y * W + x] = 0.55 * p + 0.45 * q * q;
     }
     if (!bolts.length && !reduce && !demo) planStorm();
+    if (!clouds.length) planClouds();
     bolts.forEach(function (b) { b.mask = makeBolt(b); });
     kick();
   }
@@ -55,6 +60,41 @@
       if (t <= 0) { for (var x0 = 0; x0 < W; x0++) base[row + x0] = 0; continue; }
       var prof = SKY_MAX * Math.pow(t, 1.35);
       for (var x = 0; x < W; x++) base[row + x] = prof * (0.55 + 0.9 * noise[row + x]);
+    }
+  }
+
+  /* Clouds: a handful of small puffy clouds in the sky band, each drifting right at its own slow speed and
+     wrapping around. Positions are in CSS pixels on the page (so they scroll away with the sky). */
+  function planClouds() {
+    var n = Math.max(3, Math.min(7, Math.round(innerWidth / 260)));
+    for (var i = 0; i < n; i++) {
+      var w = rand(80, 170) * Math.max(0.55, Math.min(1, innerWidth / 1000)), puffs = [], k = 3 + Math.floor(Math.random() * 3);
+      for (var p = 0; p < k; p++) {
+        var u = (p + 0.5) / k;                    // bigger puffs in the middle, flat-ish bottom
+        puffs.push({ dx: (u - 0.5) * w * 0.8, r: w * (0.16 + 0.16 * Math.sin(u * Math.PI)) * rand(0.85, 1.15) });
+      }
+      clouds.push({ x: rand(0, innerWidth + 200), y: rand(0.05, 0.32) * innerHeight * SKY_REACH + 24,
+                    v: rand(7, 16), w: w, puffs: puffs });
+    }
+  }
+  function drawClouds(t) {
+    cloud.fill(0);
+    var span = innerWidth + 400, sy = window.pageYOffset || 0, moving = !reduce;
+    for (var i = 0; i < clouds.length; i++) {
+      var c = clouds[i];
+      var cx = ((c.x + (moving ? c.v * t / 1000 : 0)) % span) - 200, cy = c.y - sy;
+      for (var p = 0; p < c.puffs.length; p++) {
+        var pf = c.puffs[p], px0 = (cx + pf.dx) / CELL, r = pf.r / CELL;
+        var py0 = (cy - pf.r * 0.35) / CELL, bottom = cy / CELL + r * 0.25;
+        var x0 = Math.max(0, Math.floor(px0 - r)), x1 = Math.min(W - 1, Math.ceil(px0 + r));
+        var y0 = Math.max(0, Math.floor(py0 - r)), y1 = Math.min(H - 1, Math.ceil(Math.min(bottom, py0 + r)));
+        for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) {
+          var d = Math.hypot(x - px0, y - py0) / r;
+          if (d >= 1) continue;
+          var v = Math.min(1, (1 - d) * 3.2);     // solid middle, soft edge
+          var j = y * W + x; if (v > cloud[j]) cloud[j] = v;
+        }
+      }
     }
   }
 
@@ -148,7 +188,14 @@
   function frame(now) {
     var t = now - t0, busy = false;
     computeBase();
+    drawClouds(t);
+    // Clouds cut a white hole in the blue sky, with a thin dotted rim so their shape reads even where the sky is thin.
+    for (var ci = 0; ci < base.length; ci++) {
+      var cc = cloud[ci]; if (!cc) continue;
+      base[ci] = base[ci] * (1 - cc) + (cc < 0.45 ? 0.5 * Math.sin(cc / 0.45 * Math.PI) : 0);
+    }
     field.set(base);
+    if (clouds.length && !reduce) busy = true;
 
     // Load wave: rows above the front are drawn, a brighter band rides on the front.
     if (front < H + 30) {
@@ -157,19 +204,19 @@
       revealUpTo(front * CELL);
     }
     // Lightning.
-    strikeNow = 0;
+    strikeNow = 0; boltOn.fill(0);
     for (var s = 0; s < bolts.length; s++) {
       var bo = bolts[s], lvl = strike((t - bo.start) / bo.dur);
       if (t < bo.start + bo.dur) busy = true;
       if (lvl > 0 && bo.mask) {
         if (lvl > strikeNow) strikeNow = lvl;
         var m = bo.mask;
-        for (var b = 0; b < m.length; b += 2) field[m[b]] += m[b + 1] * lvl * 0.9;
+        for (var b = 0; b < m.length; b += 2) { field[m[b]] += m[b + 1] * lvl * 0.9; if (m[b + 1] * lvl > 0.3) boltOn[m[b]] = 1; }
       }
     }
 
     // The whole night sky flashes with each strike.
-    if (strikeNow > 0) for (var f = 0; f < field.length; f++) if (base[f] > 0) field[f] += base[f] * 0.8 * strikeNow;
+    if (strikeNow > 0) for (var f = 0; f < field.length; f++) if (base[f] > 0) field[f] += base[f] * FLASH * strikeNow;
 
     // Mouse: every recent pointer position leaves a soft patch of dither that shrinks and fades, so moving leaves a trail.
     for (var mi = trail.length - 1; mi >= 0; mi--) {
@@ -196,11 +243,14 @@
       var band = frontRow - y < 6 && front < H + 30 ? 0.22 * (1 - (frontRow - y) / 6) : 0;
       for (var x = 0; x < W; x++, j++) {
         var v = field[j] + band;
-        px[j] = v > BAYER[by + (x & 3)] ? (strikeNow > 0 && v > 0.62 ? BOLT : DOT) : 0;
+        var th = BAYER[by + (x & 3)];
+        px[j] = v > th ? (boltOn[j] ? BOLT : DOT) : (CLOUD && cloud[j] * 0.7 > th ? CLOUD : 0);
       }
     }
     ctx.putImageData(img, 0, 0);
-    if (busy) requestAnimationFrame(frame); else running = false;
+    if (trail.length || ripples.length || front < H + 30 || strikeNow > 0) requestAnimationFrame(frame);
+    else if (busy) setTimeout(function () { requestAnimationFrame(frame); }, 50);   // only clouds moving: 20 fps is plenty
+    else running = false;
   }
 
   // Keep text readable: no dither under elements marked data-clear, with a soft edge around them.
@@ -218,7 +268,7 @@
         for (var x = x0; x <= x1; x++) {
           var dx = x < l ? l - x : x > rt ? x - rt : 0;
           var d = Math.max(dx, dy);
-          if (d < FADE) field[y * W + x] *= d / FADE;
+          if (d < FADE) { field[y * W + x] *= d / FADE; cloud[y * W + x] *= d / FADE; }
         }
       }
     }
