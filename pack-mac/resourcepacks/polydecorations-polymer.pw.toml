@@ -1,0 +1,8 @@
+name = "Polydecorations textures (server pack)"
+filename = "Server-Polymer-Pack-polydecorations.zip"
+side = "client"
+
+[download]
+url = "https://thunderruler.github.io/thunders-mc-pack/pack/files/resourcepacks/Server-Polymer-Pack-polydecorations.zip"
+hash-format = "sha512"
+hash = "b4382e2e1aa01b2059c9ea851cedf592c4b4b1e83137a8edf1bb0f497a1888627beb00ad1c7a56acb32f6cf71e694b78558c4d987deb81a831f86d41d1417ac5"

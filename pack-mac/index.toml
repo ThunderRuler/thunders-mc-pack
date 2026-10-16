@@ -746,7 +746,7 @@ metafile = true
 
 [[files]]
 file = "options.txt"
-hash = "c820f50390f943203557edca1a9402825d968e5ae6ba6fd990d13b0988cb5171"
+hash = "c24c56c6b96559f48b9f22a608e79852bbec87052e55eaf16b351bbaf1f26fbd"
 preserve = true
 
 [[files]]
@@ -932,6 +932,11 @@ metafile = true
 [[files]]
 file = "resourcepacks/fresh-animations-classic-horses.pw.toml"
 hash = "ba41280e784ab5121f929c1091fda84ed7160a76ab2da9ff49ca2604c3418abf"
+metafile = true
+
+[[files]]
+file = "resourcepacks/polydecorations-polymer.pw.toml"
+hash = "2cc1da8605bd0b5bf0d9a503ae21e40eb0105dbae382f34314daba6feaafc2b0"
 metafile = true
 
 [[files]]
