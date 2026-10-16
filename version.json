@@ -16,7 +16,8 @@
     "Timber: chopping a log fells the whole tree (sneak to take just one log), no axe needed in hand",
     "@claude answers now show in public chat",
     "The raw 'fastback.broadcast.message' text from the backup mod no longer shows in chat",
-    "The instance name now shows the pack version"
+    "The instance name now shows the pack version",
+    "Essential is kept on version 1.5.0.1: 1.5.1 turns the inventory character pink. If you launched v3 before this note and see it, close the game, delete the file .minecraft/essential/Essential (fabric_26.3).jar (plus its .meta and version.json) and launch again"
    ]
   },
   {

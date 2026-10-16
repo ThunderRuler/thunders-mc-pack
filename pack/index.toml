@@ -1017,3 +1017,7 @@ metafile = true
 file = "mods/polydecorations-assets.pw.toml"
 hash = "202c6156d48b90e32449505ca73868205d154cb8a3490f9e3418a1c7fd508dc4"
 metafile = true
+
+[[files]]
+file = "essential/essential-loader.properties"
+hash = "671b6178ccdbaae7c15e634d1a69faf950d2c33127533cea5f0b09e736a91649"
