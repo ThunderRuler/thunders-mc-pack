@@ -1,19 +1,26 @@
 {
- "version": 3,
+ "version": 3.1,
  "gate": 3,
  "date": "2026-10-16",
  "history": [
+  {
+   "version": 3.1,
+   "date": "2026-10-16",
+   "redownload": false,
+   "notes": [
+    "Lootr added: every player gets their own loot in generated chests",
+    "Item swap animation set to the pack default (smooth S-curve, faster) for everyone",
+    "Mac: lighter settings for small Macs (60 FPS, lightest shader preset, no texture filtering, 3 GB of memory)",
+    "Hunger bar shows normal drumsticks again (it was feathers)",
+    "Ping Wheel: the ping key now defaults to the middle mouse button on new installs",
+    "Optional re-download: the hunger-icon fix and the smaller Mac memory setting only come with the new zip; everything else updates by itself when you press Play"
+   ]
+  },
   {
    "version": 3,
    "date": "2026-10-16",
    "redownload": true,
    "notes": [
-    "Lootr added: every player gets their own loot in generated chests",
-    "Item swap animation set to the pack default (smooth S-curve, faster) for everyone",
-    "Mac: lighter settings for small Macs (60 FPS, lightest shader preset, no texture filtering, 3 GB of memory)",
-    "Mac: lighter settings for small Macs (60 FPS, lightest shader preset, no texture filtering, 3 GB of memory)",
-    "Hunger bar shows normal drumsticks again (it was feathers)",
-    "Ping Wheel: the ping key now defaults to the middle mouse button on new installs",
     "Older instances are now told to download this new one when they try to join",
     "Essential added: custom skins, outfits and capes now show for everyone who has it",
     "Ping Wheel: hold the ping key (middle-click by default) to ping a spot for your friends",
