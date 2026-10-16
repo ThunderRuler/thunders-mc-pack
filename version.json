@@ -1,0 +1,26 @@
+{
+ "version": 2,
+ "date": "2026-10-15",
+ "history": [
+  {
+   "version": 2,
+   "date": "2026-10-15",
+   "redownload": true,
+   "notes": [
+    "Hearts, hunger and the hotbar show again (they fade to dim instead of hiding for good)",
+    "Unique Dark hotbar instead of the Immersive Interfaces one",
+    "New rainbow bolt icon for the instance and the server",
+    "Fixed the error spam on every launch (removed the Remove Reloading Screen mod)",
+    "MakeUp Ultra Fast shader added on Windows for lower-end PCs"
+   ]
+  },
+  {
+   "version": 1,
+   "date": "2026-10-15",
+   "redownload": false,
+   "notes": [
+    "First release"
+   ]
+  }
+ ]
+}

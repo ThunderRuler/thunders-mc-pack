@@ -789,6 +789,22 @@
   var platform = null, key = null, address = null, meta = null, openPw = null;
   // Open mode: when dl/meta.json carries "open" (the password itself), the buttons download without asking.
   // Remove the field (or rebuild dl/ with build_site.py) to ask for the password again.
+  // Pack version + changelog (version.json is the one place a release is written down).
+  fetch('version.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (v) {
+    var box = document.getElementById('version'); if (!box) return;
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    function day(d) { var p = d.split('-'); return +p[2] + ' ' + months[+p[1] - 1] + ' ' + p[0]; }
+    document.getElementById('version-label').textContent = 'Version ' + v.version + ' (' + day(v.date) + ')';
+    var list = document.getElementById('version-list');
+    v.history.forEach(function (h) {
+      var li = document.createElement('li'), head = document.createElement('strong'), ul = document.createElement('ul');
+      head.textContent = 'v' + h.version + ' · ' + day(h.date); li.appendChild(head);
+      if (h.redownload) { var tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = 'Download again'; li.appendChild(tag); }
+      h.notes.forEach(function (n) { var x = document.createElement('li'); x.textContent = n; x.style.border = '0'; x.style.margin = '0'; x.style.padding = '0'; ul.appendChild(x); });
+      li.appendChild(ul); list.appendChild(li);
+    });
+    box.hidden = false;
+  }).catch(function () {});
   fetch('dl/meta.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (m) {
     meta = m; openPw = m.open || null;
     if (openPw) { document.querySelectorAll('.pw-only').forEach(function (el) { el.hidden = true; }); pw.value = openPw; unlock(true); }

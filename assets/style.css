@@ -118,6 +118,15 @@ h1 {
 .unlock-msg.err { color: var(--err); }
 .unlock-msg.ok { color: var(--ok); }
 .fineprint { margin: 4px 0 0; font-size: 13px; color: var(--ink-2); }
+/* Pack version + changelog, under the buttons */
+.version { margin: 10px auto 0; max-width: 520px; font-size: 13px; color: var(--ink-2); text-align: left; background: var(--panel); border: 1px solid var(--line); }
+.version summary { cursor: pointer; padding: 8px 12px; font-weight: 700; color: var(--ink); text-align: center; list-style-position: inside; }
+.version > .note, .version ol { margin: 0; padding: 0 14px 10px; }
+.version ol { list-style: none; }
+.version li { padding: 8px 0 0; border-top: 1px solid var(--line); margin-top: 8px; }
+.version li strong { color: var(--ink); }
+.version .tag { display: inline-block; margin-left: 6px; padding: 1px 6px; font-size: 11px; font-weight: 700; background: var(--ink); color: var(--on-ink); }
+.version ul { margin: 4px 0 0; padding-left: 18px; }
 
 /* Steps */
 .steps { padding: 24px 0 40px; }
