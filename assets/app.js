@@ -49,13 +49,22 @@
   var DARK = { sky: ['#252a5e', '#4b3a7c', '#8a4a82', '#c8607a', '#e88a5c'], bolt: '#b9a6d8',
                cloud: '#6e6890', shade: '#d98a7a', flash: 0.25, flat: true };
   var dark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)');
-  var SKY, BOLT, CLOUD, SHADE, FLASH, FLAT;
+  var SKY, BOLT, CLOUD, SHADE, FLASH, FLAT, BG_RGB;
   function pickTheme() {
     var c = dark && dark.matches ? DARK : LIGHT;
     SKY = c.sky.map(rgb); BOLT = pack(rgb(c.bolt)); CLOUD = c.cloud ? pack(rgb(c.cloud)) : 0;
     SHADE = pack(rgb(c.shade)); FLASH = c.flash; FLAT = c.flat;
+    BG_RGB = rgb(dark && dark.matches ? '#15131f' : '#f6f6f5');   // = --bg in style.css
   }
   // Sky colour at u (0 = top of the sky, 1 = where it fades out), blended between the theme's colour stops.
+  // Between the sky's dots: the same sky colour pulled GAP_MIX of the way toward the page colour, so the sky never
+  // shows bare page background (black at dusk) through the dither. Calmer than dots on black.
+  var GAP_MIX = 0.28;
+  function gapColour(u) {
+    var c = skyColour(u), bg = BG_RGB;
+    var r = c & 255, g = (c >> 8) & 255, b = (c >> 16) & 255;
+    return pack([Math.round(r + (bg[0] - r) * GAP_MIX), Math.round(g + (bg[1] - g) * GAP_MIX), Math.round(b + (bg[2] - b) * GAP_MIX)]);
+  }
   function skyColour(u) {
     if (SKY.length === 1) return pack(SKY[0]);
     var s = Math.max(0, Math.min(1, u)) * (SKY.length - 1), i = Math.min(SKY.length - 2, Math.floor(s)), f = s - i;
@@ -70,7 +79,7 @@
   // window of it: the visible part plus half a screen above and below, so a quick scroll never shows an undrawn edge.
   // W x H = that window in cells; WY = page position (CSS px) of its top row; VH = screen height in cells; M = margin rows.
   // rowCol: the sky dot colour for each row. vis: 1, or less near text.
-  var W = 0, H = 0, VH = 0, M = 0, WY = 0, PR = 0, noise, base, field, img, px, rowCol, vis;
+  var W = 0, H = 0, VH = 0, M = 0, WY = 0, PR = 0, noise, base, field, img, px, rowCol, rowGap, vis;
   var mouse = { x: -999, y: -999, cx: -999, cy: -999 };   // cx, cy: last pointer position on screen (CSS px)
   var trail = [];                                 // recent pointer positions (x in cells, py = page px); each fades out over TRAIL_MS
   var TRAIL_MS = 1100, TRAIL_R = 40 * K;
@@ -105,7 +114,7 @@
     VH = Math.max(1, Math.ceil((innerHeight || document.documentElement.clientHeight || 1) / CELL));
     M = Math.ceil(VH / 2); H = VH + 2 * M;
     sizeCanvas();
-    img = ctx.createImageData(W, H); px = new Uint32Array(img.data.buffer); rowCol = new Uint32Array(H); vis = new Float32Array(W * H);
+    img = ctx.createImageData(W, H); px = new Uint32Array(img.data.buffer); rowCol = new Uint32Array(H); rowGap = new Uint32Array(H); vis = new Float32Array(W * H);
     noise = new Float32Array(W * PR); cloud = new Float32Array(W * H); shade = new Float32Array(W * H); boltOn = new Uint8Array(W * H); base = new Float32Array(W * H); field = new Float32Array(W * H);
     for (var y = 0; y < PR; y++) for (var x = 0; x < W; x++) {   // tied to the page, not the screen
       // Faint large-scale haze so the sky isn't a perfectly flat gradient, plus a little per-dot jitter that hides
@@ -126,9 +135,10 @@
     var reach = world ? world.surf : innerHeight * SKY_REACH, sy = WY, r0 = WY / CELL;
     for (var y = 0; y < H; y++) {
       var t = 1 - (y * CELL + sy) / reach, row = y * W;
-      rowCol[y] = skyColour(1 - t);
+      rowCol[y] = skyColour(1 - t); rowGap[y] = 0;
       if (world) t = Math.max(0.001, t);           // with the world below, the sky runs all the way down to the horizon
       if (t <= 0) { for (var x0 = 0; x0 < W; x0++) base[row + x0] = 0; continue; }
+      rowGap[y] = gapColour(1 - t);
       // Day: thins out steadily. Dusk: stays fuller lower down, so the warm glow near the horizon shows.
       var prof = FLAT ? SKY_MAX * (0.55 * Math.pow(t, 1.2) + 0.45 * smooth(0, 0.55, t)) : SKY_MAX * Math.pow(t, 1.35);
       if (world) prof = FLAT ? SKY_MAX * (0.5 + 0.5 * Math.pow(t, 1.2)) : SKY_MAX * (0.22 + 0.78 * Math.pow(t, 1.35));
@@ -660,7 +670,7 @@
           // inside a cloud: lit parts are white (light mode) or pale grey (dark mode); shadows dither in a darker tone
           // (th / c re-spreads the same dither threshold over just the cloud's cells, so the shading dithers cleanly)
           px[j] = shade[j] * 0.8 > th / c ? SHADE : CLOUD;
-        } else px[j] = v > th ? (boltOn[j] ? BOLT : rowCol[y]) : 0;
+        } else px[j] = v > th ? (boltOn[j] ? BOLT : rowCol[y]) : rowGap[y];
       }
     }
     ctx.putImageData(img, 0, WY / CELL);
