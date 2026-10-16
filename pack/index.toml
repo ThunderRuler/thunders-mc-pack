@@ -1,6 +1,10 @@
 hash-format = "sha256"
 
 [[files]]
+file = "config/autohud.json5"
+hash = "7cf66372d69f91c6bec54c982f5b2a9aea2e04b59f985b97b7380aad726383d3"
+
+[[files]]
 file = "config/crash_assistant/config.toml"
 hash = "a59b77c85c64018a54ac129dfae20895e465b81cfc4e85ad46fd5028fbe00bb1"
 preserve = true

@@ -1,0 +1,208 @@
+{
+	"dynamicOnLoad": true,
+	"ticksRevealed": 150,
+	"animationMove": false,
+	"animationFade": true,
+	"animationSpeed": 2.0,
+	"animationSpeeds": {
+		"moveIn": 0.0,
+		"moveOut": 0.0,
+		"fadeIn": 3.0,
+		"fadeOut": 2.0
+	},
+	"events": {
+		"onScreenOpen": "Nothing",
+		"onMoving": "Nothing",
+		"onStandingStill": "Nothing",
+		"onPauseScreen": "Reveal",
+		"onSneaking": "Nothing",
+		"onFlying": "Nothing",
+		"onUsingItem": true,
+		"onMining": true
+	},
+	"elements": {
+		"minecraft:hotbar": {
+			"maximumMoveHotbar": 1.0,
+			"minimumAlpha": 0.1,
+			"onChange": true,
+			"onSlotChange": true,
+			"durabilityPercentage": 0.1,
+			"onDamageChange": false,
+			"onStackSizeChange": true,
+			"maximumFadeHotbarItems": 0.30000000000000004,
+			"alwaysHidden": false,
+			"onLowDurability": true,
+			"maximumAlpha": 1.0,
+			"durabilityTotal": 20,
+			"dynamic": true
+		},
+		"minecraft:tooltip": {
+			"minimumAlpha": 0.3,
+			"alwaysHidden": false,
+			"maximumAlpha": 1.0
+		},
+		"minecraft:subtitle": {
+			"minimumAlpha": 0.3,
+			"alwaysHidden": false,
+			"maximumAlpha": 1.0
+		},
+		"minecraft:overlay_message": {
+			"minimumAlpha": 0.3,
+			"alwaysHidden": false,
+			"maximumAlpha": 1.0,
+			"dynamic": true
+		},
+		"minecraft:status_effects": {
+			"hidePersistentStatusEffects": true,
+			"minimumAlpha": 0.5,
+			"alwaysHidden": false,
+			"onChange": true,
+			"showHiddenStatusEffects": false,
+			"maximumAlpha": 1.0,
+			"dynamic": true
+		},
+		"minecraft:boss_bar": {
+			"minimumAlpha": 0.8,
+			"alwaysHidden": false,
+			"maximumAlpha": 1.0,
+			"dynamic": false
+		},
+		"minecraft:info_bar": {
+			"minimumAlpha": 0.3,
+			"revealLocatorBarWhenNearby": 32,
+			"alwaysHidden": false,
+			"onChange": true,
+			"maximumAlpha": 1.0,
+			"dynamic": true
+		},
+		"minecraft:player_list": {
+			"minimumAlpha": 0.3,
+			"alwaysHidden": false,
+			"maximumAlpha": 1.0
+		},
+		"minecraft:armor_bar": {
+			"minimumAlpha": 0.3,
+			"alwaysHidden": false,
+			"onChange": "Changing",
+			"maximumAlpha": 1.0,
+			"revealBelow": 0.0,
+			"dynamic": true,
+			"revealWhenHoldingArmorItem": true
+		},
+		"minecraft:air_bar": {
+			"minimumAlpha": 0.3,
+			"alwaysHidden": false,
+			"onChange": "Decreasing",
+			"maximumAlpha": 1.0,
+			"revealBelow": 0.3,
+			"dynamic": true
+		},
+		"minecraft:health_bar": {
+			"minimumAlpha": 0.3,
+			"alwaysHidden": false,
+			"onChange": "Changing",
+			"maximumAlpha": 1.0,
+			"revealBelow": 0.3,
+			"revealWhenHoldingHealingItem": true,
+			"dynamic": true
+		},
+		"minecraft:scoreboard": {
+			"minimumAlpha": 0.3,
+			"alwaysHidden": false,
+			"onTeamChange": true,
+			"onScoreChange": true,
+			"maximumAlpha": 1.0,
+			"onTitleChange": true,
+			"dynamic": true
+		},
+		"minecraft:title": {
+			"minimumAlpha": 0.3,
+			"alwaysHidden": false,
+			"maximumAlpha": 1.0
+		},
+		"minecraft:experience_level": {
+			"revealOnTargetingEnchantingBlock": true,
+			"minimumAlpha": 0.3,
+			"alwaysHidden": false,
+			"onChange": true,
+			"revealOnTargetingList": [
+				"minecraft:enchanting_table",
+				"#minecraft:anvil"
+			],
+			"maximumAlpha": 1.0,
+			"dynamic": true,
+			"revealWithHotbar": false
+		},
+		"autohud:chat_indicator": {
+			"displayIndicator": true,
+			"maximumAlpha": 1.0
+		},
+		"minecraft:crosshair": {
+			"crosshairAlwaysVisible": [
+				"minecraft:bow",
+				"minecraft:crossbow",
+				"minecraft:trident"
+			],
+			"minimumAlpha": 0.0,
+			"alwaysHidden": false,
+			"onChange": true,
+			"maximumAlpha": 1.0,
+			"dynamic": true
+		},
+		"minecraft:closed_captions": {
+			"minimumAlpha": 0.5,
+			"alwaysHidden": false,
+			"maximumAlpha": 1.0
+		},
+		"minecraft:chat": {
+			"minimumAlpha": 0.0,
+			"alwaysHidden": false,
+			"maximumAlpha": 1.0,
+			"dynamic": true
+		},
+		"minecraft:food_bar": {
+			"minimumAlpha": 0.3,
+			"alwaysHidden": false,
+			"revealWhenHoldingConsumableItem": true,
+			"onChange": "Changing",
+			"maximumAlpha": 1.0,
+			"revealBelow": 0.3,
+			"visibleWhenRiding": true,
+			"dynamic": true
+		},
+		"minecraft:mount_health_bar": {
+			"minimumAlpha": 0.3,
+			"alwaysHidden": false,
+			"onChange": "Changing",
+			"maximumAlpha": 1.0,
+			"revealBelow": 0.3,
+			"dynamic": true
+		},
+		"pickupnotifications:notifications": {
+			"minimumAlpha": 1.0,
+			"alwaysHidden": false,
+			"synchronizeWith": "autohud:none",
+			"unlink": false,
+			"maximumAlpha": 1.0,
+			"overrideDirection": false,
+			"direction": "NONE"
+		},
+		"controlify:button_guide": {
+			"minimumAlpha": 0.8,
+			"alwaysHidden": false,
+			"synchronizeWith": "autohud:none",
+			"maximumAlpha": 1.0,
+			"overrideDirection": false,
+			"direction": "NONE"
+		},
+		"horseman:horse_stats_tooltip": {
+			"minimumAlpha": 0.0,
+			"alwaysHidden": false,
+			"synchronizeWith": "autohud:none",
+			"unlink": false,
+			"maximumAlpha": 1.0,
+			"overrideDirection": false,
+			"direction": "NONE"
+		}
+	}
+}
