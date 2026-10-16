@@ -2,7 +2,7 @@
  "version": 3,
  "kdf": "PBKDF2-SHA256",
  "iterations": 600000,
- "salt": "nW2mEf4+LpOF18FM/iNvCQ==",
+ "salt": "YktbTSgirppYiSEk/E/lDg==",
  "files": {
   "windows": {
    "name": "Thunders-MC-Pack-v3-26.3.zip",
