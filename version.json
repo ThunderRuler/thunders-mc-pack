@@ -9,11 +9,11 @@
    "notes": [
     "Essential added: custom skins, outfits and capes now show for everyone who has it",
     "Ping Wheel: hold the ping key (middle-click by default) to ping a spot for your friends",
-    "Vein Miner: hold the vein-miner key while mining ores to mine the whole vein",
+    "Vein Miner: mining an ore with a pickaxe now breaks the whole vein, no key needed",
     "Fresh Animations player and horse animations added",
     "Your Photon look is now the default: darker nights and better colours",
     "Running particles removed; villager and player snoring halved; fewer glowing particles on dropped items",
-    "Timber (tree chopping) is faster and no longer needs an axe in hand, so it works with auto-switch",
+    "Timber: chopping a log fells the whole tree (sneak to take just one log), no axe needed in hand",
     "@claude answers now show in public chat",
     "The raw 'fastback.broadcast.message' text from the backup mod no longer shows in chat",
     "The instance name now shows the pack version"

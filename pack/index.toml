@@ -999,11 +999,6 @@ hash = "9507bfab8115ee84fc1197592663f83b6e7d8b565294d0af0e44a0c9750c4688"
 metafile = true
 
 [[files]]
-file = "mods/veinminer-client.pw.toml"
-hash = "81c59a49b4530211d79889eaf084a324459dd333315ee20740f52919869e469e"
-metafile = true
-
-[[files]]
 file = "mods/essential.pw.toml"
 hash = "e82a2af8f5e06105131c992d81045fe71d4598be32f1e0af2160c3ffe8bc6065"
 metafile = true
