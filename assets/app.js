@@ -247,7 +247,7 @@
     var P = {
       stone: ['#8e8e8e', '#767676', '#616161'], dirt: ['#8b5e3b', '#6c4529', '#a3714b'], grass: ['#6db33f', '#55962f'],
       deep: ['#5a5a62', '#48484f', '#38383e'], bedrock: ['#9a9a9a', '#5a5a5a', '#2c2c2c'],
-      planks: ['#b08d55', '#94733f', '#6f5329'], log: ['#6e5433', '#54402a'], leaves: ['#4a9a32', '#367a24'],
+      planks: ['#b08d55', '#94733f', '#6f5329'], log: ['#6b5131', '#4f3b22', '#8a6a3e'], leaves: ['#4f9e2e', '#3d8124', '#2e6619', '#63b23a'],
       lava: ['#ffc23a', '#ff8a1e', '#e0501a'], torch: ['#8a6b3b', '#ffe066', '#ffa22e'], rail: ['#a8a8a8', '#6f5329'], web: '#e6e6e6'
     };
     function T(fn) {
@@ -272,8 +272,17 @@
       return [seam ? P.planks[2] : hash(x, y, 61) < 0.2 ? P.planks[1] : P.planks[0], 0.9];
     });
     t[FENCE] = T(function (x) { return x >= 6 && x <= 9 ? [x === 9 ? P.planks[2] : P.planks[0], 0.9] : null; });
-    t[LOG] = T(function (x, y) { return [(x % 4 === 0 || hash(x, y, 71) < 0.12) ? P.log[1] : P.log[0], 0.9]; });
-    t[LEAVES] = T(function (x, y) { var h = hash(x, y, 81); return h < 0.22 ? null : [h < 0.5 ? P.leaves[1] : P.leaves[0], 0.9]; });
+    // oak log (side): vertical bark ridges, dark grooves between them, a few light flecks
+    t[LOG] = T(function (x, y) {
+      var groove = x % 5 === 0 || (x % 5 === 3 && hash(x, y >> 2, 72) < 0.5), h = hash(x, y, 71);
+      return [groove ? P.log[1] : h < 0.1 ? P.log[2] : h < 0.25 ? P.log[1] : P.log[0], 0.9];
+    });
+    // oak leaves (fancy): solid, speckled in three greens with a few light tips; only a couple of tiny gaps
+    t[LEAVES] = T(function (x, y) {
+      var h = hash(x, y, 81), n = vnoise(x / 2.2, y / 2.2, 82);
+      if (h < 0.04) return null;
+      return [h > 0.93 ? P.leaves[3] : n < 0.35 ? P.leaves[2] : n < 0.6 ? P.leaves[1] : P.leaves[0], 0.9];
+    });
     t[LAVA] = T(function (x, y) { var n = vnoise(x / 3, y / 3, 91); return [n > 0.62 ? P.lava[0] : n > 0.38 ? P.lava[1] : P.lava[2], 1]; });
     t[TORCH] = T(function (x, y) {
       if (x < 7 || x > 8) return null;
@@ -360,12 +369,17 @@
       if (!(xr < mr.left - 8 || xl > mr.right + 8)) continue;
       if (c - lastTree < 6 || hash(c, 9, S) > 0.35) continue;
       lastTree = c;
-      var g = hcol[c], th = 4 + Math.floor(hash(c, 10, S) * 2);
+      var g = hcol[c], th = 4 + Math.floor(hash(c, 10, S) * 3);   // trunk 4-6 logs, like the game
       for (var k = 1; k <= th; k++) ids[(g - k) * cols + c] = LOG;
-      for (var ly = g - th - 2; ly <= g - th + 1; ly++) for (var lx = c - 2; lx <= c + 2; lx++) {
-        var far = Math.abs(lx - c);
-        if ((far === 2 && (ly === g - th - 2 || ly === g - th + 1)) || (ly === g - th - 2 && far > 1) || ly < 0) continue;
-        if (!ids[ly * cols + lx]) ids[ly * cols + lx] = LEAVES;
+      // Minecraft oak, seen from the side: two 5-wide leaf layers around the top of the trunk, then two 3-wide layers
+      // above it (the top one sits one block above the last log). The leaves in front hide the trunk inside the canopy.
+      for (var ly = g - th - 1; ly <= g - th + 2; ly++) {
+        if (ly < 0) continue;
+        var half = ly <= g - th ? 1 : 2;
+        for (var lx = c - half; lx <= c + half; lx++) {
+          var li = ly * cols + lx;
+          if (!ids[li] || ids[li] === LOG) ids[li] = LEAVES;
+        }
       }
     }
     world = { cols: cols, rows: rows, top: top, surf: surf, ids: ids, hcol: hcol, wc: cols * BS, hc: rows * BS };
