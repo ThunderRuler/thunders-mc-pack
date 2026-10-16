@@ -117,7 +117,7 @@ _version = 5
 	[common.multiThreading]
 		#
 		# How many threads should be used by Distant Horizons?
-		numberOfThreads = 4
+		numberOfThreads = 2
 		#
 		# A value between 1.0 and 0.0 that represents the percentage 
 		# of time each thread can run before going idle. 
@@ -809,7 +809,7 @@ _version = 5
 				# Note: this is a best effort number. 
 				# The actual render distance may be above or below this number 
 				# depending on your other graphic settings.
-				lodChunkRenderDistanceRadius = 64
+				lodChunkRenderDistanceRadius = 32
 				#
 				# How should the sides and bottom of grass block LODs render? 
 				# 

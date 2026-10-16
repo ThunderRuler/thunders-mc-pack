@@ -221,7 +221,7 @@ preserve = true
 
 [[files]]
 file = "config/modpack_defaults/options.txt"
-hash = "07b1a01f30b40aa69ed9fb20bab82a8a0c2d8625c7c57239cd50f355db93e487"
+hash = "7288d5ecb5620a306659b92535e6b1f236a48d5d8e72657080e943549c1d647a"
 preserve = true
 
 [[files]]
@@ -746,7 +746,7 @@ metafile = true
 
 [[files]]
 file = "options.txt"
-hash = "c820f50390f943203557edca1a9402825d968e5ae6ba6fd990d13b0988cb5171"
+hash = "dbd7cfb6f704ee8e9792f9604dc8c62d50c356a1c8d135a3840ec9d47f186f1a"
 preserve = true
 
 [[files]]
@@ -945,10 +945,10 @@ metafile = true
 
 [[files]]
 file = "config/mcopt.properties"
-hash = "8057e12223682de62da190648f39fbdb27f8c7389f9bf77111e6ef4f27fe338a"
+hash = "017ff44854866519fa2bf7ce3aa978f3da48f86fd55b5e642b63b1e5da1fc628"
 preserve = true
 
 [[files]]
 file = "config/DistantHorizons.toml"
-hash = "f67702ebc8bb795493c6fc0d9957d72c745ab85a3d46d8e8faa44b789f116cdd"
+hash = "6bc9e234886c4fecc6d089619e142a8dbfc6314298868792256c644ae536de14"
 preserve = true

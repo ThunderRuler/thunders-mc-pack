@@ -8,6 +8,7 @@
    "date": "2026-10-16",
    "redownload": true,
    "notes": [
+    "Mac: lighter settings for small Macs (60 FPS, lightest shader preset, no texture filtering, 3 GB of memory)",
     "Hunger bar shows normal drumsticks again (it was feathers)",
     "Ping Wheel: the ping key now defaults to the middle mouse button on new installs",
     "Older instances are now told to download this new one when they try to join",

@@ -5,8 +5,8 @@ entityDistanceScaling:0.75
 entityShadows:false
 graphicsPreset:"custom"
 prioritizeChunkUpdates:0
-textureFiltering:2
-mipmapLevels:2
+textureFiltering:0
+mipmapLevels:0
 particles:1
 renderClouds:"fast"
 cloudRange:32
