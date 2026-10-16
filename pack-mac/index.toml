@@ -943,6 +943,16 @@ hash = "c2150bef66c3ded85efadd0c0f9a1d496188104ae158510a845cac1b288cb84e"
 metafile = true
 
 [[files]]
+file = "mods/sit.pw.toml"
+hash = "9ade0b49f70f1c257de904d1be6f442fa65b3b2603bc43cd1404a90aadb950f3"
+metafile = true
+
+[[files]]
+file = "mods/otterlib.pw.toml"
+hash = "ea0a3d98707b15ae973aad7186a6dae73085b1ae533ade93f73bb40e0cd15bc3"
+metafile = true
+
+[[files]]
 file = "mods/metal-shaders.pw.toml"
 hash = "b7024799e866386a2bd698cc08f2983e9bb639cc771caa55fc4da7582c2a715b"
 metafile = true
