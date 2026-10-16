@@ -1,0 +1,8 @@
+name = "polydecorations-assets"
+filename = "polydecorations-assets-0.13.2.jar"
+side = "both"
+
+[download]
+url = "https://thunderruler.github.io/thunders-mc-pack/pack/files/mods/polydecorations-assets-0.13.2.jar"
+hash-format = "sha512"
+hash = "d501f253a3f9fcb7bce5156e9de2ac7048c0777a422a888cb96aeaf39a2c1910728cd8eabd5bab90ab4e21c5b93cfe707343ad39790616abb90a2b5c825eed85"

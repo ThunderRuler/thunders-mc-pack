@@ -806,7 +806,7 @@ metafile = true
 
 [[files]]
 file = "options.txt"
-hash = "ad96e02e4765e03f56ba5aeec11a59f2f3b3784c2885ab3bf42f7861d44d5072"
+hash = "f803d373ca3c4a5b3096d4c19037b3cafd4a5d964105ba88eae7b29c3986100c"
 preserve = true
 
 [[files]]
@@ -1019,6 +1019,6 @@ hash = "ba41280e784ab5121f929c1091fda84ed7160a76ab2da9ff49ca2604c3418abf"
 metafile = true
 
 [[files]]
-file = "resourcepacks/polydecorations-polymer.pw.toml"
-hash = "2cc1da8605bd0b5bf0d9a503ae21e40eb0105dbae382f34314daba6feaafc2b0"
+file = "mods/polydecorations-assets.pw.toml"
+hash = "202c6156d48b90e32449505ca73868205d154cb8a3490f9e3418a1c7fd508dc4"
 metafile = true
