@@ -251,7 +251,7 @@ preserve = true
 
 [[files]]
 file = "config/modpack_defaults/options.txt"
-hash = "4ea9ccdd0f39cd1c42de4a057939dd9a4903f0b1edacbbb25db1d7abf624b702"
+hash = "9cdd6912e1792a15d5a0c6415fc67dcf2259a61872938f45d2183eb511260654"
 preserve = true
 
 [[files]]

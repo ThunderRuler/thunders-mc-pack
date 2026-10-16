@@ -30,5 +30,6 @@ key_iris.keybind.reload:key.keyboard.unknown
 key_iris.keybind.toggleShaders:key.keyboard.unknown
 key_iris.keybind.shaderPackSelection:key.keyboard.unknown
 key_key.optigui.inspect:key.keyboard.unknown
+key_key.pingwheel.ping_location:key.mouse.middle
 enableVsync:true
 maxFps:60
