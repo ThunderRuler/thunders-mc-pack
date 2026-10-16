@@ -1,7 +1,24 @@
 {
- "version": 2,
- "date": "2026-10-15",
+ "version": 3,
+ "date": "2026-10-16",
  "history": [
+  {
+   "version": 3,
+   "date": "2026-10-16",
+   "redownload": true,
+   "notes": [
+    "Essential added: custom skins, outfits and capes now show for everyone who has it",
+    "Ping Wheel: hold the ping key (middle-click by default) to ping a spot for your friends",
+    "Vein Miner: hold the vein-miner key while mining ores to mine the whole vein",
+    "Fresh Animations player and horse animations added",
+    "Your Photon look is now the default: darker nights and better colours",
+    "Running particles removed; villager and player snoring halved; fewer glowing particles on dropped items",
+    "Timber is no longer slow, and chopping works with auto-switch",
+    "@claude answers now show in public chat",
+    "The backup mod's raw 'fastback.broadcast.message' text is gone",
+    "The instance name now shows the pack version"
+   ]
+  },
   {
    "version": 2,
    "date": "2026-10-15",

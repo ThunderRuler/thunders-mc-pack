@@ -1,12 +1,12 @@
 name = "Thunder's MC Pack"
 author = "Thunder"
-version = "26.3-2"
+version = "26.3-3"
 pack-format = "packwiz:1.1.0"
 
 [index]
 file = "index.toml"
 hash-format = "sha256"
-hash = "d15fdde042af00c64c9bfa090debbe3c24e409bd553f217283f6d3e919669f0b"
+hash = "96fbac9ae05df06b2119413aea7f2c2c49d9f9f1a87ba9581a58408f3e0df8db"
 
 [versions]
 fabric = "0.19.5"

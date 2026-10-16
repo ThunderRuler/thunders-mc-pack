@@ -806,7 +806,7 @@ metafile = true
 
 [[files]]
 file = "options.txt"
-hash = "543e02dd9d0f0c4baa57233c72daba84dee2b706dedece2608b1f9879915bf92"
+hash = "f803d373ca3c4a5b3096d4c19037b3cafd4a5d964105ba88eae7b29c3986100c"
 preserve = true
 
 [[files]]
@@ -905,5 +905,115 @@ metafile = true
 
 [[files]]
 file = "shaderpacks/photon_v1.3b.zip.txt"
-hash = "d5721a837ab8fbf08304090c247c14372c571a69e82b83783f87bfc1957f3b21"
+hash = "e1b9c53dd406d6721b08876cfd604fe01bb54dc95e8ebcbc08af742b1eb20a0f"
 preserve = true
+
+[[files]]
+file = "config/subtle_effects/blocks.toml"
+hash = "372c6b4dae2030784b499b01020e5534b1f5afe455c314b8c053ef03851d8ec4"
+preserve = true
+
+[[files]]
+file = "config/subtle_effects/entities.toml"
+hash = "cf4cf5c52ff84f7590c05a7c6ca1d54c4576b0042ec66ef38effdd4dbd5a92fc"
+preserve = true
+
+[[files]]
+file = "config/subtle_effects/environment.toml"
+hash = "c9590ef4b1d42e6c7b5dc6feb83450f5aeabc562e9d3af68291b4c8af2e89841"
+preserve = true
+
+[[files]]
+file = "config/subtle_effects/general.toml"
+hash = "0221386919699e9d3b44ef397c78600ae08dd44be234009eb193a999026ae01f"
+preserve = true
+
+[[files]]
+file = "config/subtle_effects/items.toml"
+hash = "5159b271da02ac9e03b802670e5d0fe0986575604fd3eced9535ae6e9061341a"
+preserve = true
+
+[[files]]
+file = "config/entity_model_features.json"
+hash = "c5f0da723fb0c5a436169e7a30323e15eaccf7b1927b58a0ffc713ef2e03c503"
+preserve = true
+
+[[files]]
+file = "config/entity_texture_features.json"
+hash = "b796ea17ca7f7e21661d448dd834925d5627bd27894003549332da2ccd549344"
+preserve = true
+
+[[files]]
+file = "config/bettergrass.json"
+hash = "d31f4687470a8f72af9c519a3f168e29f38e5b5450808ba2bb7f344dd53fede5"
+preserve = true
+
+[[files]]
+file = "config/moreculling.toml"
+hash = "a0b2444db1aa65997fd715d0c2a7753f5be302d1304364993260fb7489c1eddb"
+preserve = true
+
+[[files]]
+file = "config/smoothscroll.json"
+hash = "242f040b80135023438225d3d37a6d3acf92d955afa8be65892592720b685427"
+preserve = true
+
+[[files]]
+file = "config/smoothswapping.json"
+hash = "07e37e2d77d38a8189321c0bd342644364a9035515c698cd34d22f0feaf631fd"
+preserve = true
+
+[[files]]
+file = "config/dynamic_fps.json"
+hash = "11f0bee0bbc9f3b8442c91838b0018e4630f8ceb56de641c2234e42cdc638abc"
+preserve = true
+
+[[files]]
+file = "config/cape-provider/config.json"
+hash = "2d2a5ee86f8b103727eed107a13716d82494cb1bf08d1a8aec4efde4d9366bf1"
+preserve = true
+
+[[files]]
+file = "config/modernfix-mixins.properties"
+hash = "1bdc731ea299eabedbc39a20d81bbe5fdbc80b15765b15776795840d33a85b52"
+preserve = true
+
+[[files]]
+file = "config/NoChatReports/NCR-Client.json"
+hash = "e1ef79c2827deb3971b388c2bd63c183ac03ac327c91a4e28b7af96c69c472db"
+preserve = true
+
+[[files]]
+file = "config/sound_physics_remastered/soundphysics.properties"
+hash = "b2fd2eddd7cbf84fa3d9113db6407b68baf2eb3e45d75f850a818e9af5eb5cab"
+preserve = true
+
+[[files]]
+file = "mods/ping-wheel.pw.toml"
+hash = "6c5e84a22bd6aaee4f7bb99f31ea81905b366e54fb945f0463a2de6eb9f2ff5a"
+metafile = true
+
+[[files]]
+file = "mods/veinminer.pw.toml"
+hash = "9507bfab8115ee84fc1197592663f83b6e7d8b565294d0af0e44a0c9750c4688"
+metafile = true
+
+[[files]]
+file = "mods/veinminer-client.pw.toml"
+hash = "81c59a49b4530211d79889eaf084a324459dd333315ee20740f52919869e469e"
+metafile = true
+
+[[files]]
+file = "mods/essential.pw.toml"
+hash = "e82a2af8f5e06105131c992d81045fe71d4598be32f1e0af2160c3ffe8bc6065"
+metafile = true
+
+[[files]]
+file = "resourcepacks/fresh-animations-player.pw.toml"
+hash = "2e1a6866e4366cebe200dcf71ab52923b7653f76dc48741b93411ee3bf77372a"
+metafile = true
+
+[[files]]
+file = "resourcepacks/fresh-animations-classic-horses.pw.toml"
+hash = "ba41280e784ab5121f929c1091fda84ed7160a76ab2da9ff49ca2604c3418abf"
+metafile = true
