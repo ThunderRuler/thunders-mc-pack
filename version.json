@@ -8,6 +8,8 @@
    "date": "2026-10-16",
    "redownload": true,
    "notes": [
+    "Hunger bar shows normal drumsticks again (it was feathers)",
+    "Ping Wheel: the ping key now defaults to the middle mouse button on new installs",
     "Older instances are now told to download this new one when they try to join",
     "Essential added: custom skins, outfits and capes now show for everyone who has it",
     "Ping Wheel: hold the ping key (middle-click by default) to ping a spot for your friends",
