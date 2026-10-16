@@ -960,8 +960,7 @@ preserve = true
 
 [[files]]
 file = "config/smoothswapping.json"
-hash = "07e37e2d77d38a8189321c0bd342644364a9035515c698cd34d22f0feaf631fd"
-preserve = true
+hash = "2a273fc3cc8be973fe61afae7075f9e64f77aa6adff793e6c550c40b8f9916d3"
 
 [[files]]
 file = "config/dynamic_fps.json"
@@ -1021,3 +1020,8 @@ metafile = true
 [[files]]
 file = "essential/essential-loader.properties"
 hash = "671b6178ccdbaae7c15e634d1a69faf950d2c33127533cea5f0b09e736a91649"
+
+[[files]]
+file = "mods/lootr.pw.toml"
+hash = "c2150bef66c3ded85efadd0c0f9a1d496188104ae158510a845cac1b288cb84e"
+metafile = true
