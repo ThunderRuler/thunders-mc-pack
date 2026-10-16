@@ -2,15 +2,15 @@
  "version": 3,
  "kdf": "PBKDF2-SHA256",
  "iterations": 600000,
- "salt": "OJgurhnIqtWmj5Kzi44wlA==",
+ "salt": "vEOutaJdJKimWnmHbz4qBA==",
  "files": {
   "windows": {
    "name": "Thunders-MC-Pack-v3-26.3.zip",
-   "size": 1900425
+   "size": 1901798
   },
   "mac": {
    "name": "Thunders-MC-Pack-v3-26.3-Mac.zip",
-   "size": 1900438
+   "size": 1901811
   }
  },
  "open": "creeper-obsidian-emerald16"
