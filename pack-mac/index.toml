@@ -966,3 +966,7 @@ preserve = true
 file = "config/DistantHorizons.toml"
 hash = "6bc9e234886c4fecc6d089619e142a8dbfc6314298868792256c644ae536de14"
 preserve = true
+
+[[files]]
+file = "config/immediatelyfast.json"
+hash = "8be46b528c1332db634ed231495bf721e291c126caabbd72780bbba18e07259c"
