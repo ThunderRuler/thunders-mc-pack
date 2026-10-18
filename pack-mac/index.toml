@@ -831,8 +831,7 @@ preserve = true
 
 [[files]]
 file = "config/subtle_effects/entities.toml"
-hash = "cf4cf5c52ff84f7590c05a7c6ca1d54c4576b0042ec66ef38effdd4dbd5a92fc"
-preserve = true
+hash = "727947bc22bf692454dc0b741b865abe97b9710b1c2fd7afec99df09008665ac"
 
 [[files]]
 file = "config/subtle_effects/environment.toml"
