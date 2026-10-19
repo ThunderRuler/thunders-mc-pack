@@ -6,3 +6,8 @@ side = "client"
 url = "https://github.com/GaelQuinta/minecraft-metal-shaders/releases/download/v1.2.1-alpha/metal-shaders-1.2.1-alpha.jar"
 hash-format = "sha256"
 hash = "a1fc6824163ec19a754c3350c655b57fec7e3141b70788fd9886e6bb84221cd3"
+
+[option]
+optional = true
+default = true
+description = "Metal Shaders (Apple Silicon Macs only). Untick this on an Intel Mac."

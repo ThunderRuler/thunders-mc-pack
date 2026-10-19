@@ -953,7 +953,7 @@ metafile = true
 
 [[files]]
 file = "mods/metal-shaders.pw.toml"
-hash = "b7024799e866386a2bd698cc08f2983e9bb639cc771caa55fc4da7582c2a715b"
+hash = "94e112af7d32271639cc281a938984d036a81686bb1684e7f81fa1346c93d720"
 metafile = true
 
 [[files]]
