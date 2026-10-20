@@ -843,7 +843,7 @@
       pw.value = '';
       document.querySelector('.unlock-row').hidden = true;
       label.textContent = NAMES[platform] + ' download';
-      say('Saved ' + (platform === 'mac' ? 'Thunders-MC-Pack-v3-26.3-Mac.zip' : 'Thunders-MC-Pack-v3-26.3.zip') + '. Next: import it into Prism (step 3 below).', 'ok');
+      say('Saved ' + (platform === 'mac' ? 'Thunders-MC-Pack-v3-26.3-Mac.zip' : 'Thunders-MC-Pack-v3.1-26.3.zip') + '. Next: import it into Prism (step 3 below).', 'ok');
     }
   }
 
