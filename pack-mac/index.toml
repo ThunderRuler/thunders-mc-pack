@@ -952,6 +952,11 @@ hash = "ea0a3d98707b15ae973aad7186a6dae73085b1ae533ade93f73bb40e0cd15bc3"
 metafile = true
 
 [[files]]
+file = "mods/journeymap.pw.toml"
+hash = "d82bc8a1d25812bcfea6ad9996132bee0880694c4fb4d9f56bee826dd53547d7"
+metafile = true
+
+[[files]]
 file = "mods/metal-shaders.pw.toml"
 hash = "94e112af7d32271639cc281a938984d036a81686bb1684e7f81fa1346c93d720"
 metafile = true
