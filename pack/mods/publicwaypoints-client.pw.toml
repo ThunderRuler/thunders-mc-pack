@@ -1,0 +1,8 @@
+name = "Public Waypoints (client)"
+filename = "publicwaypoints-client-0.1.1.jar"
+side = "client"
+
+[download]
+url = "https://thunderruler.github.io/thunders-mc-pack/pack/files/mods/publicwaypoints-client-0.1.1.jar"
+hash-format = "sha512"
+hash = "9fe9da9ea45bf855706c147b24e2741842d734c8bd7acd151ff54527041f8de5a5abc5c91e47ea8aa4257207f57da8b49c6eead5231916336f0e5aa6d7a9b1c6"

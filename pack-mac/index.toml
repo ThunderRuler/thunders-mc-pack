@@ -957,6 +957,11 @@ hash = "d82bc8a1d25812bcfea6ad9996132bee0880694c4fb4d9f56bee826dd53547d7"
 metafile = true
 
 [[files]]
+file = "mods/publicwaypoints-client.pw.toml"
+hash = "c42e102bf871e03e12a8a84a40a5b95a2b0f2ec69166d39a55bde570300b4c52"
+metafile = true
+
+[[files]]
 file = "mods/metal-shaders.pw.toml"
 hash = "94e112af7d32271639cc281a938984d036a81686bb1684e7f81fa1346c93d720"
 metafile = true
